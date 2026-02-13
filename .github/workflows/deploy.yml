@@ -18,8 +18,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            export PATH="/root/.nvm/versions/node/v24.13.1/bin:$PATH"
             cd /var/www/eduhub-backend
             git pull origin main
             npm install
