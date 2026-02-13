@@ -69,7 +69,7 @@ export default class Application {
     const api = 'api/v1';
     app.setGlobalPrefix(api);
     const config_swagger = new DocumentBuilder()
-      .setTitle('EduHub API')
+      .setTitle('EduHub REST API')
       .setVersion('1.0')
       .addBearerAuth(
         {
