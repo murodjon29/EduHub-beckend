@@ -69,7 +69,7 @@ export default class Application {
     const api = 'api/v1';
     app.setGlobalPrefix(api);
     const config_swagger = new DocumentBuilder()
-      .setTitle('Nasiya API')
+      .setTitle('EduHub API')
       .setVersion('1.0')
       .addBearerAuth(
         {
