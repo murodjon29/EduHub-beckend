@@ -20,6 +20,7 @@ jobs:
           script: |
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            export PATH="$HOME/.nvm/versions/node/$(nvm current)/bin:$PATH"
             cd /var/www/eduhub-backend
             git pull origin main
             npm install
