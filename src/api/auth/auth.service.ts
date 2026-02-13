@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,7 +22,7 @@ export class AuthService {
     private readonly fileService: FileService,
     private readonly jwtService: JwtService,
     private readonly bcrypt: BcryptManage,
-  ) {}
+  ) { }
 
   // Ro'yxatdan o'tish
   async register(registerDto: RegisterDto, file?: Express.Multer.File | any) {
@@ -166,14 +167,73 @@ export class AuthService {
       data: learningCenter,
     };
   }
+  // Foydalanuvchi ma'lumotlarini yangilash
+  async update(id: number, updateAuthDto: UpdateAuthDto, file?: Express.Multer.File | any) {
+    const { name, email, phone } = updateAuthDto;
+    // Email unikal bo'lishi kerak
+    if(await this.learningCenterRepository.findOne({ where: { email } })){
+      throw new ConflictException('This email is already registered');
+    }
+    // Telefon raqami unikal bo'lishi kerak
+    if(await this.learningCenterRepository.findOne({ where: { phone } })){
+      throw new ConflictException('This phone number is already registered');
+    }
+    // login unikal bo'lishi kerak
+    if(await this.learningCenterRepository.findOne({ where: { login: updateAuthDto.login } })){
+      throw new ConflictException('This login is already registered');
+    }
+    const learningCenter = await this.learningCenterRepository.findOne({
+      where: { id },
+    });
+    // Agar foydalanuvchi topilmasa, xatolik qaytarish
+    if (!learningCenter) {
+      throw new NotFoundException('User not found');
+    }
+    // Foydalanuvchi ma'lumotlarini olish
+    let logoUrl = learningCenter.image;
+    // Agar yangi fayl kiritilgan bo'lsa, eski faylni o'chirish va yangi faylni saqlash
+    if (file) {
+      if (logoUrl) {
+        await this.fileService.deleteFile(logoUrl);
+      }
+      logoUrl = await this.fileService.createFile(file);
+    }
+    // Agar parol kiritilgan bo'lsa, uni xeshlash
+    if(updateAuthDto.password){
+      const hashedPassword = await this.bcrypt.createBcryptPassword(updateAuthDto.password);
+      learningCenter.password = hashedPassword;
+    }
+    // Foydalanuvchi ma'lumotlarini yangilash
+    await this.learningCenterRepository.update(id, { ...updateAuthDto, password: learningCenter.password, image: logoUrl });
+    // Yangilangan ma'lumotlarni olish
+    const updatedLearningCenter = await this.learningCenterRepository.findOne({
+      where: { id },
+    });
+    // Yangilangan ma'lumotlarni qaytarish
+    return {
+      status_code: 200,
+      message: 'User data updated successfully',
+      data: updatedLearningCenter,
+    };
+    
+  }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  // logout
+  async logout(res: Response) {
+    try {
+      res.clearCookie('refresh_token');
+      return {
+        status_code: 200,
+        message: 'Logout successful',
+      };
+    } catch (error) {
+      throw new BadRequestException(`Error on logout: ${error}`);
+    }
   }
 
   private async writeToCookie(refresh_token: string, res: Response) {
     try {
-      res.cookie('refresh_token_store', refresh_token, {
+      res.cookie('refresh_token', refresh_token, {
         maxAge: 15 * 24 * 60 * 60 * 1000,
         httpOnly: true,
       });
