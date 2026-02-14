@@ -5,40 +5,39 @@ import { LearningCenter } from './learning_center.entity';
 import { Group } from './group.entity';
 import { Attendance } from './attendance.entity';
 import { TeacherSalary } from './teacher_salary.entity';
+import { Lesson } from './lesson.entity';
 
 @Entity('teachers')
 export class Teacher extends BaseModel {
   @Column({ type: 'varchar', length: 255 })
-  name: string; // O'qituvchining ismi
+  name: string;
 
   @Column({ type: 'varchar', length: 255 })
-  lastName: string; // O'qituvchining familiyasi
+  lastName: string;
 
   @Column({ type: 'varchar', length: 20, unique: true })
-  phone: string; // Telefon raqami
+  phone: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  salary: number; // Asosiy oylik maoshi
+  salary: number;
 
   @Column({ type: 'enum', enum: Role, default: Role.TEACHER })
-  role: Role; // Roli (TEACHER, ADMIN, SUPER_ADMIN)
+  role: Role;
 
   @Column({ type: 'boolean', default: true })
-  isActive: boolean; // Hali ishlayaptimi yoki ketganmi
+  isActive: boolean;
 
   @Column({ type: 'varchar', length: 50, unique: true })
-  login: string; // Tizimga kirish logini
+  login: string;
 
-  // O'qituvchi qaysi fan bo'yicha dars beradi (masalan, Matematika, Ingliz tili, Fizika va h.k.)
   @Column()
   subject: string;
 
-
   @Column({ type: 'varchar', length: 255 })
-  password: string; // Parol (hashlangan)
+  password: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  email: string; // Email manzili
+  email: string;
 
   @ManyToOne(
     () => LearningCenter,
@@ -49,24 +48,30 @@ export class Teacher extends BaseModel {
     },
   )
   @JoinColumn({ name: 'learning_center_id' })
-  learningCenter: LearningCenter; // Qaysi o'quv markazda ishlaydi
+  learningCenter: LearningCenter;
 
-  @Column({ type: 'uuid', nullable: true })
-  learningCenterId: string; // O'quv markaz ID si (foreign key)
+  // 🔴 XATO: type 'uuid' emas, 'int' bo'lishi kerak
+  @Column({ type: 'int', nullable: true })
+  learningCenterId: number;
 
   @OneToMany(() => Group, (group) => group.teacher, {
     cascade: true,
   })
-  groups: Group[]; // Dars beradigan guruhlari
+  groups: Group[];
 
   @OneToMany(() => Attendance, (attendance) => attendance.teacher, {
     cascade: true,
   })
-  attendances: Attendance[]; // Dars o'tgan kunlarning davomati
+  attendances: Attendance[];
 
-  @OneToMany(() => TeacherSalary, (teacherSalary) => teacherSalary.teacher, {
-    // DIQQAT: 'salary' emas, 'teacherSalary' yoki 'ts'
+  // ✅ Lesson bilan bog'lanish - TO'G'RILANGAN
+  @OneToMany(() => Lesson, (lesson) => lesson.teacher, {
     cascade: true,
   })
-  salaries: TeacherSalary[]; // Oylik maoshlari tarixi
+  lessons: Lesson[];
+
+  @OneToMany(() => TeacherSalary, (teacherSalary) => teacherSalary.teacher, {
+    cascade: true,
+  })
+  salaries: TeacherSalary[];
 }

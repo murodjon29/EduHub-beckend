@@ -5,41 +5,42 @@ import { BaseModel } from '../../common/database';
 import { Teacher } from './teacher.entity';
 import { StudentPayment } from './student-payment.entity';
 import { LearningCenter } from './learning_center.entity';
+import { Lesson } from './lesson.entity';
 
 @Entity('groups')
 export class Group extends BaseModel {
   @Column({ type: 'varchar', length: 255 })
-  name: string; // Guruh nomi (masalan: "Ingliz tili Beginner 2024")
+  name: string;
 
   @Column({ type: 'date' })
-  startDate: string; // Guruh qachon boshlangan
+  startDate: string;
 
   @Column({ type: 'date' })
-  endDate: string; // Guruh qachon tugaydi
+  endDate: string;
 
   @Column({ type: 'int' })
-  lessonDays: number; // Haftada necha kun dars (1,2,3,5)
+  lessonDays: number;
 
   @Column({ type: 'time' })
-  lessonTime: string; // Dars soati (masalan: "15:00:00")
+  lessonTime: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  monthlyPrice: number; // Oylik to'lov narxi
+  monthlyPrice: number;
 
   @Column({ type: 'boolean', default: true })
-  isActive: boolean; // Guruh aktivmi yoki arxivlanganmi
+  isActive: boolean;
 
   @Column({ type: 'int', nullable: true })
-  maxStudents: number; // Guruhga maksimal qancha o'quvchi olish mumkin
+  maxStudents: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  room: string; // Xona raqami yoki nomi
+  room: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string; // Qo'shimcha ma'lumotlar
+  description: string;
 
-  @Column({ type: 'int' })
-  currentStudents: number; // Hozirgi o'quvchilar soni
+  @Column({ type: 'int', default: 0 })
+  currentStudents: number;
 
   // ---------- Relationships ----------
 
@@ -49,10 +50,10 @@ export class Group extends BaseModel {
     nullable: true,
   })
   @JoinColumn({ name: 'teacher_id' })
-  teacher: Teacher; // Guruhga biriktirilgan o'qituvchi
+  teacher: Teacher;
 
   @Column({ type: 'int', nullable: true })
-  teacherId: number; // O'qituvchining ID si (foreign key) - UUID emas, number
+  teacherId: number;
 
   // LearningCenter bilan bog'lanish (Many-to-One)
   @ManyToOne(() => LearningCenter, (learningCenter) => learningCenter.groups, {
@@ -60,26 +61,32 @@ export class Group extends BaseModel {
     nullable: false,
   })
   @JoinColumn({ name: 'learning_center_id' })
-  learningCenter: LearningCenter; // Qaysi o'quv markaziga tegishli
+  learningCenter: LearningCenter;
 
   @Column({ type: 'int', nullable: false })
-  learningCenterId: number; // O'quv markazi ID si
+  learningCenterId: number;
 
   // GroupStudent bilan bog'lanish (One-to-Many)
   @OneToMany(() => GroupStudent, (groupStudent) => groupStudent.group, {
     cascade: true,
   })
-  groupStudents: GroupStudent[]; // Shu guruhdagi o'quvchilar ro'yxati
+  groupStudents: GroupStudent[];
 
   // Attendance bilan bog'lanish (One-to-Many)
   @OneToMany(() => Attendance, (attendance) => attendance.group, {
     cascade: true,
   })
-  attendances: Attendance[]; // Shu guruhning davomatlari
+  attendances: Attendance[];
 
   // StudentPayment bilan bog'lanish (One-to-Many)
   @OneToMany(() => StudentPayment, (payment) => payment.group, {
     cascade: true,
   })
-  payments: StudentPayment[]; // Shu guruhga oid to'lovlar
+  payments: StudentPayment[];
+
+  // ✅ Lesson bilan bog'lanish (One-to-Many) - TO'G'RILANGAN
+  @OneToMany(() => Lesson, (lesson) => lesson.group, {
+    cascade: true,
+  })
+  lessons: Lesson[];
 }

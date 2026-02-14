@@ -33,6 +33,8 @@ import { StudentPayment } from '../core/entities/student-payment.entity';
 import { Attendance } from '../core/entities/attendance.entity';
 import { LastActivity } from '../core/entities/last-activity.entity';
 import { RequestLog } from '../core/entities/request-log.entity';
+import { LessonModule } from './lesson/lesson.module';
+import { Lesson } from '../core/entities/lesson.entity';
 
 @Module({
   imports: [
@@ -59,7 +61,8 @@ import { RequestLog } from '../core/entities/request-log.entity';
           StudentPayment,
           Attendance,
           LastActivity,
-          RequestLog
+          RequestLog,
+          Lesson
         ],
         autoLoadEntities: false,
         synchronize: true,
@@ -122,6 +125,7 @@ import { RequestLog } from '../core/entities/request-log.entity';
     StudentsModule,
     StudentPaymentsModule,
     AttendanceModule,
+    LessonModule,
   ],
   providers: [
     {
