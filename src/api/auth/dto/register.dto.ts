@@ -35,6 +35,7 @@ export class RegisterDto {
     pattern: '^\\+998[0-9]{9}$'
   })
   @IsString()
+  @IsPhoneNumber('UZ') // O'zbekiston telefon raqami formatini tekshiradi
   phone: string;
 
   @ApiProperty({
