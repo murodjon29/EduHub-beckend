@@ -71,7 +71,7 @@ export class AuthService {
     const { login, password } = loginDto;
     // Login va parolni tekshirish
     const learningCenter = await this.learningCenterRepository.findOne({
-      where: { login, password },
+      where: { login },
     });
     if (!learningCenter) {
       throw new NotFoundException('Invalid login');
