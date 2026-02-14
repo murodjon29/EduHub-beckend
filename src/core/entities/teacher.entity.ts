@@ -29,6 +29,11 @@ export class Teacher extends BaseModel {
   @Column({ type: 'varchar', length: 50, unique: true })
   login: string; // Tizimga kirish logini
 
+  // O'qituvchi qaysi fan bo'yicha dars beradi (masalan, Matematika, Ingliz tili, Fizika va h.k.)
+  @Column()
+  subject: string;
+
+
   @Column({ type: 'varchar', length: 255 })
   password: string; // Parol (hashlangan)
 
