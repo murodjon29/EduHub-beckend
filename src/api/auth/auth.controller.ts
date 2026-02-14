@@ -7,6 +7,8 @@ import {
   Res,
   Get,
   Param,
+  UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -22,15 +24,18 @@ import {
   ApiBearerAuth,
   ApiParam,
 } from '@nestjs/swagger';
+import { JwtGuard } from '../../common/guard/jwt-auth.guard';
+import { SelfGuard } from '../../common/guard/self.guard';
+import { UpdateAuthDto } from './dto/update.dto';
 
 @ApiTags('auth') // Swaggerda 'auth' tagi ostida guruhlanadi
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   // Ro'yxatdan o'tish
   @Post('register')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Yangi foydalanuvchi ro\'yxatdan o\'tkazish',
     description: 'Ushbu endpoint orqali yangi foydalanuvchi ro\'yxatdan o\'tadi'
   })
@@ -45,8 +50,8 @@ export class AuthController {
         name: { type: 'string', example: 'John Doe' },
         phone: { type: 'string', example: '+998901234567' },
         email: { type: 'string', example: 'john@example.com' },
-        file: { 
-          type: 'string', 
+        file: {
+          type: 'string',
           format: 'binary',
           description: 'Profil rasmi (ixtiyoriy)'
         },
@@ -64,7 +69,7 @@ export class AuthController {
         name: 'John Doe',
         email: 'john@example.com',
         phone: '+998901234567',
-        avatar: 'uploads/avatar-1234567890.jpg',
+        image: 'uploads/avatar-1234567890.jpg',
         createdAt: '2024-01-15T10:30:00.000Z'
       }
     }
@@ -101,7 +106,7 @@ export class AuthController {
 
   // Kirish
   @Post('login')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Tizimga kirish',
     description: 'Login va parol orqali tizimga kirish'
   })
@@ -118,17 +123,17 @@ export class AuthController {
           login: 'john_doe',
           name: 'John Doe',
           email: 'john@example.com',
-          avatar: 'uploads/avatar.jpg'
+          image: 'uploads/avatar.jpg'
         }
       }
     }
   })
   @ApiResponse({
-    status: 401,
+    status: 400,
     description: 'Noto\'g\'ri login yoki parol',
     schema: {
       example: {
-        statusCode: 401,
+        statusCode: 400,
         message: 'Login yoki parol noto\'g\'ri',
         error: 'Unauthorized'
       }
@@ -140,7 +145,7 @@ export class AuthController {
 
   // Tokenni yangilash
   @Post('refresh-token')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Access tokenni yangilash',
     description: 'Refresh token orqali yangi access token olish'
   })
@@ -148,9 +153,9 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        refresh_token: { 
-          type: 'string', 
-          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' 
+        refresh_token: {
+          type: 'string',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         }
       },
       required: ['refresh_token']
@@ -177,6 +182,8 @@ export class AuthController {
       }
     }
   })
+  @ApiBearerAuth() // Token talab qilinadi
+  @UseGuards(JwtGuard)
   refreshToken(
     @Body('refresh_token') refresh_token: string,
     @Res({ passthrough: true }) res: Response,
@@ -186,12 +193,12 @@ export class AuthController {
 
   // Foydalanuvchi ma'lumotlarini olish
   @Get('me/:id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Foydalanuvchi ma\'lumotlarini olish',
     description: 'ID bo\'yicha foydalanuvchi ma\'lumotlarini qaytaradi'
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'Foydalanuvchi ID si',
     type: 'number',
     example: 1
@@ -235,7 +242,88 @@ export class AuthController {
       }
     }
   })
+  @UseGuards(JwtGuard, SelfGuard)
   me(@Param('id') id: string) {
     return this.authService.me(+id);
+  }
+
+  // Foydalanuvchi ma'lumotlarini yangilash
+  @Patch('update/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard, SelfGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Foydalanuvchi ma\'lumotlari va profil rasmi',
+    schema: {
+      type: 'object',
+      properties: {
+        login: { type: 'string', example: 'john_doe' },
+        password: { type: 'string', example: 'StrongP@ssw0rd123' },
+        name: { type: 'string', example: 'John Doe' },
+        phone: { type: 'string', example: '+998901234567' },
+        email: { type: 'string', example: 'john@example.com' },
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Profil rasmi (ixtiyoriy)'
+        },
+      },
+      required: ['login', 'password', 'name', 'phone', 'email'],
+    },
+  })
+  @ApiOperation({
+    summary: 'Foydalanuvchi ma\'lumotlarini yangilash',
+    description: 'ID bo\'yicha foydalanuvchi ma\'lumotlarini yangilash'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Foydalanuvchi ID si',
+    type: 'number',
+    example: 1
+  })
+
+  @ApiResponse({
+    status: 200,
+    description: 'Foydalanuvchi ma\'lumotlari muvaffaqiyatli yangilandi',
+    schema: {
+      example: {
+        id: 1,
+        login: 'john_doe_updated',
+        name: 'John Doe Updated',
+        email: 'john_updated@example.com',
+        phone: '+998901234567',
+        image: 'uploads/avatar-updated.jpg'
+      }
+    }
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Foydalanuvchi topilmadi',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Foydalanuvchi topilmadi',
+        error: 'Not Found'
+      }
+    }
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token mavjud emas yoki yaroqsiz',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Token not provided or invalid'
+      }
+    }
+  })
+  @UseGuards(JwtGuard, SelfGuard)
+  update(
+    @Param('id') id: string,
+    @Body() updateAuthDto: UpdateAuthDto,
+    @UploadedFile() file?: Express.Multer.File | any,
+  ) {
+    return this.authService.update(+id, updateAuthDto, file);
   }
 }
