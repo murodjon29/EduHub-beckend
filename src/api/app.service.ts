@@ -96,7 +96,7 @@ export default class Application {
     await app.listen(config.PORT ?? 3000, () => {
       console.log(`Server running on port ${config.PORT}`);
       console.log(`http://localhost:${config.PORT}/api/v1`);
-      console.log(`test`);
+      console.log(`https://app.novdaunion.uz/api/v1`);
     });
   }
 }
