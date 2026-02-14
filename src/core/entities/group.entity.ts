@@ -4,6 +4,7 @@ import { Attendance } from './attendance.entity';
 import { BaseModel } from '../../common/database';
 import { Teacher } from './teacher.entity';
 import { StudentPayment } from './student-payment.entity';
+import { LearningCenter } from './learning_center.entity';
 
 @Entity('groups')
 export class Group extends BaseModel {
@@ -28,16 +29,21 @@ export class Group extends BaseModel {
   @Column({ type: 'boolean', default: true })
   isActive: boolean; // Guruh aktivmi yoki arxivlanganmi
 
-  @OneToMany(() => GroupStudent, (groupStudent) => groupStudent.group, {
-    cascade: true,
-  })
-  groupStudents: GroupStudent[]; // Shu guruhdagi o'quvchilar ro'yxati
+  @Column({ type: 'int', nullable: true })
+  maxStudents: number; // Guruhga maksimal qancha o'quvchi olish mumkin
 
-  @OneToMany(() => Attendance, (attendance) => attendance.group, {
-    cascade: true,
-  })
-  attendances: Attendance[]; // Shu guruhning davomatlari
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  room: string; // Xona raqami yoki nomi
 
+  @Column({ type: 'text', nullable: true })
+  description: string; // Qo'shimcha ma'lumotlar
+
+  @Column({ type: 'int' })
+  currentStudents: number; // Hozirgi o'quvchilar soni
+
+  // ---------- Relationships ----------
+
+  // Teacher bilan bog'lanish (Many-to-One)
   @ManyToOne(() => Teacher, (teacher) => teacher.groups, {
     onDelete: 'SET NULL',
     nullable: true,
@@ -45,14 +51,35 @@ export class Group extends BaseModel {
   @JoinColumn({ name: 'teacher_id' })
   teacher: Teacher; // Guruhga biriktirilgan o'qituvchi
 
-  @Column({ type: 'uuid', nullable: true })
-  teacherId: string; // O'qituvchining ID si (foreign key)
+  @Column({ type: 'int', nullable: true })
+  teacherId: number; // O'qituvchining ID si (foreign key) - UUID emas, number
 
+  // LearningCenter bilan bog'lanish (Many-to-One)
+  @ManyToOne(() => LearningCenter, (learningCenter) => learningCenter.groups, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
+  @JoinColumn({ name: 'learning_center_id' })
+  learningCenter: LearningCenter; // Qaysi o'quv markaziga tegishli
+
+  @Column({ type: 'int', nullable: false })
+  learningCenterId: number; // O'quv markazi ID si
+
+  // GroupStudent bilan bog'lanish (One-to-Many)
+  @OneToMany(() => GroupStudent, (groupStudent) => groupStudent.group, {
+    cascade: true,
+  })
+  groupStudents: GroupStudent[]; // Shu guruhdagi o'quvchilar ro'yxati
+
+  // Attendance bilan bog'lanish (One-to-Many)
+  @OneToMany(() => Attendance, (attendance) => attendance.group, {
+    cascade: true,
+  })
+  attendances: Attendance[]; // Shu guruhning davomatlari
+
+  // StudentPayment bilan bog'lanish (One-to-Many)
   @OneToMany(() => StudentPayment, (payment) => payment.group, {
     cascade: true,
   })
   payments: StudentPayment[]; // Shu guruhga oid to'lovlar
-
-  @Column({ type: 'int', nullable: true })
-  maxStudents: number; // Guruhga maksimal qancha o'quvchi olish mumkin
 }

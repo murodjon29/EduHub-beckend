@@ -161,6 +161,23 @@ export class TeachersService {
     }
   }
 
+  async getTeachersByLearningCenter(learningCenterId: number) {
+    // O'quv markaziga tegishli o'qituvchilarni olish
+    const teachers = await this.teacherRepository.createQueryBuilder('teacher')
+    // O'quv markazi bo'yicha filtrlash
+      .where('teacher.learningCenterId = :learningCenterId', { learningCenterId })
+      // Natijalarni olish
+      .getMany();
+      if(teachers.length === 0 || !teachers) {
+        throw new NotFoundException('Bu o\'quv markaziga tegishli o\'qituvchi topilmadi');
+      }
+    return {
+      statusCode: 200,
+      message: 'O\'quv markaziga tegishli o\'qituvchilar muvaffaqiyatli topildi',
+      data: teachers,
+    }
+  }
+
 
   // Barcha o'qituvchilarni olish
   async findAll() {
