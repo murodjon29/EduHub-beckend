@@ -29,6 +29,8 @@ import { GroupStudent } from '../core/entities/group_student.entity';
 import { Student } from '../core/entities/student.entity';
 import { StudentPayment } from '../core/entities/student-payment.entity';
 import { Attendance } from '../core/entities/attendance.entity';
+import { LastActivity } from '../core/entities/last-activity.entity';
+import { RequestLog } from '../core/entities/request-log.entity';
 
 // ---------- ENTITY'LARNI TO'G'RIDAN-TO'G'RI IMPORT QILISH (MUHIM! 🔴) ----------
 
@@ -53,6 +55,9 @@ import { Attendance } from '../core/entities/attendance.entity';
           Student,
           StudentPayment,
           Attendance,
+          LastActivity,
+          RequestLog
+          
         ],
         autoLoadEntities: false, // 🔴 false qilamiz, chunki entities'ni o'zimiz ro'yxat qildik
         synchronize: true, // dev uchun
