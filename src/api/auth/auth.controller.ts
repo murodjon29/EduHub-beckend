@@ -143,6 +143,38 @@ export class AuthController {
     return this.authService.login(loginDto, res);
   }
 
+  // Chiqish
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Tizimdan chiqish',
+    description: 'Refresh tokenni bekor qilib, foydalanuvchini tizimdan chiqaradi'
+  })
+  @ApiBearerAuth() // Token talab qilinadi
+  @ApiResponse({
+    status: 200,
+    description: 'Muvaffaqiyatli chiqish',
+    schema: {
+      example: {
+        message: 'Muvaffaqiyatli chiqish'
+      }
+    }
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token mavjud emas yoki yaroqsiz',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Token not provided or invalid'
+      }
+    }
+  })
+  @UseGuards(JwtGuard)
+  logout(@Res({ passthrough: true }) res: Response) {
+    return this.authService.logout(res);
+  }
+
   // Tokenni yangilash
   @Post('refresh-token')
   @ApiOperation({
