@@ -5,14 +5,34 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LearningCenter } from '../../core/entities/learning_center.entity';
 import { FileModule } from '../file/file.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BcryptManage } from '../../infrastructure/lib/bcrypt';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([LearningCenter]),
-  JwtModule.register({ global: true }), 
-  FileModule,],
+    
+    // JWT modulini secret bilan sozlash
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      global: true,
+      useFactory: (configService: ConfigService) => {
+        // expiresIn ni to'g'ri formatda olish
+        const expiresIn = configService.get<string>('ACCESS_TOKEN_TIME') || '24h';
+        
+        return {
+          secret: configService.get<string>('ACCESS_TOKEN_KEY'),
+          signOptions: { 
+            expiresIn: expiresIn as any, // TypeScript xatosini oldini olish
+          },
+        };
+      },
+    }),
+    
+    FileModule,
+  ],
   controllers: [AuthController],
   providers: [AuthService, BcryptManage],
 })
-export class AuthModule { }
+export class AuthModule {}

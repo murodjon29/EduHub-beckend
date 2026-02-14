@@ -70,13 +70,13 @@ export class AuthController {
     }
   })
   @ApiResponse({
-    status: 400,
+    status: 409,
     description: 'Noto\'g\'ri ma\'lumotlar yoki foydalanuvchi allaqachon mavjud',
     schema: {
       example: {
-        statusCode: 400,
-        message: 'Bunday login yoki email allaqachon mavjud',
-        error: 'Bad Request'
+        statusCode: 409,
+        message: 'Bunday login, email yoki telefon raqami allaqachon mavjud',
+        error: 'Conflict'
       }
     }
   })

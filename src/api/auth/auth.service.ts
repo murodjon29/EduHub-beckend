@@ -29,11 +29,11 @@ export class AuthService {
     const { name, email, password, phone } = registerDto;
     // Email unikal bo'lishi kerak
     if (await this.learningCenterRepository.findOne({ where: { email } }))
-      throw new NotFoundException('This email is already registered');
+      throw new ConflictException('Bu email allaqachon mavjud');
 
     // Telefon raqami unikal bo'lishi kerak
     if (await this.learningCenterRepository.findOne({ where: { phone } }))
-      throw new NotFoundException('This phone number is already registered');
+      throw new ConflictException('Bu telefon raqami allaqachon mavjud');
 
     // login unikal bo'lishi kerak
     if (
@@ -41,7 +41,7 @@ export class AuthService {
         where: { login: registerDto.login },
       })
     )
-      throw new NotFoundException('This login is already registered');
+      throw new ConflictException('Bunday login allaqachon mavjud');
 
     // Faylni saqlash va URL olish
     let logoUrl;
@@ -74,19 +74,19 @@ export class AuthService {
       where: { login },
     });
     if (!learningCenter) {
-      throw new NotFoundException('Invalid login');
+      throw new BadRequestException('Notog\'ri login');
     }
     const isPasswordValid = await this.bcrypt.comparePassword(
       password,
       learningCenter.password,
     );
     if (!isPasswordValid) {
-      throw new NotFoundException('Invalid password');
+      throw new BadRequestException('Notog\'ri parol');
     }
     // Agar hisob bloklangan bo'lsa, xatolik qaytarish
     if (learningCenter.is_blocked) {
-      throw new NotFoundException(
-        'Your account is blocked. Please contact support.',
+      throw new BadRequestException(
+        'Sizning hisobingiz bloklangan, iltimos administrator bilan bog\'laning',
       );
     }
     // JWT token yaratish
@@ -127,7 +127,7 @@ export class AuthService {
     });
     // Agar foydalanuvchi topilmasa, xatolik qaytarish
     if (!learningCenter) {
-      throw new NotFoundException('User not found');
+      throw new BadRequestException('User not found');
     }
     // Yangi access token yaratish
     const newPayload = {
@@ -172,15 +172,15 @@ export class AuthService {
     const { name, email, phone } = updateAuthDto;
     // Email unikal bo'lishi kerak
     if(await this.learningCenterRepository.findOne({ where: { email } })){
-      throw new ConflictException('This email is already registered');
+      throw new ConflictException('Bu email allaqachon mavjud');
     }
     // Telefon raqami unikal bo'lishi kerak
     if(await this.learningCenterRepository.findOne({ where: { phone } })){
-      throw new ConflictException('This phone number is already registered');
+      throw new ConflictException('Bu telefon raqami allaqachon mavjud');
     }
     // login unikal bo'lishi kerak
     if(await this.learningCenterRepository.findOne({ where: { login: updateAuthDto.login } })){
-      throw new ConflictException('This login is already registered');
+      throw new ConflictException('Bu login allaqachon mavjud');
     }
     const learningCenter = await this.learningCenterRepository.findOne({
       where: { id },
@@ -231,6 +231,7 @@ export class AuthService {
     }
   }
 
+  // Cookie ga refresh token yozish
   private async writeToCookie(refresh_token: string, res: Response) {
     try {
       res.cookie('refresh_token', refresh_token, {

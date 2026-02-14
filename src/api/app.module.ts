@@ -21,6 +21,8 @@ import { GroupStudentsModule } from './group_students/group_students.module';
 import { StudentsModule } from './students/students.module';
 import { StudentPaymentsModule } from './student-payments/student-payments.module';
 import { AttendanceModule } from './attendance/attendance.module';
+
+// ---------- Entities ----------
 import { LearningCenter } from '../core/entities/learning_center.entity';
 import { Teacher } from '../core/entities/teacher.entity';
 import { TeacherSalary } from '../core/entities/teacher_salary.entity';
@@ -32,20 +34,21 @@ import { Attendance } from '../core/entities/attendance.entity';
 import { LastActivity } from '../core/entities/last-activity.entity';
 import { RequestLog } from '../core/entities/request-log.entity';
 
-// ---------- ENTITY'LARNI TO'G'RIDAN-TO'G'RI IMPORT QILISH (MUHIM! 🔴) ----------
-
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // Config modulini global sozlash
+    ConfigModule.forRoot({ 
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     
-    // ✅ TO'G'RILANGAN: Entity'lar ro'yxati bilan
+    // Database konfiguratsiyasi
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get<string>('DEV_DB_URL'),
-        // 🔴 MUHIM: BARCHA ENTITY'LARNI RO'YXATGA OLISH
         entities: [
           LearningCenter,
           Teacher,
@@ -57,10 +60,9 @@ import { RequestLog } from '../core/entities/request-log.entity';
           Attendance,
           LastActivity,
           RequestLog
-          
         ],
-        autoLoadEntities: false, // 🔴 false qilamiz, chunki entities'ni o'zimiz ro'yxat qildik
-        synchronize: true, // dev uchun
+        autoLoadEntities: false,
+        synchronize: true,
         ssl: {
           rejectUnauthorized: false,
         },
@@ -72,6 +74,7 @@ import { RequestLog } from '../core/entities/request-log.entity';
       }),
     }),
 
+    // Rate limiting
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -81,13 +84,33 @@ import { RequestLog } from '../core/entities/request-log.entity';
       ],
     }),
 
+    // Static fayllar
     ServeStaticModule.forRoot({
       rootPath: resolve(__dirname, '..', '..', '..', 'uploads'),
       serveRoot: '/api/v1/uploads',
     }),
 
-    CacheModule.register({ isGlobal: true }),
-    JwtModule.register({ global: true }),
+    // Cache
+    CacheModule.register({ 
+      isGlobal: true 
+    }),
+
+    // JWT modulini .env dagi qiymatlar bilan sozlash
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      global: true,
+      useFactory: (configService: ConfigService) => {
+        const expiresIn = configService.get<string>('ACCESS_TOKEN_TIME') || '24h';
+        
+        return {
+          secret: configService.get<string>('ACCESS_TOKEN_KEY'),
+          signOptions: { 
+            expiresIn: expiresIn as any, // TypeScript xatoligini oldini olish
+          },
+        };
+      },
+    }),
 
     // ---------- Modules ----------
     LearningCenterModule,
@@ -101,8 +124,14 @@ import { RequestLog } from '../core/entities/request-log.entity';
     AttendanceModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-    { provide: APP_INTERCEPTOR, useClass: ActivityInterceptor },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ActivityInterceptor,
+    },
   ],
 })
 export class AppModule {}
