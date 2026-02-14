@@ -19,92 +19,38 @@ import {
   ApiResponse,
   ApiConsumes,
   ApiBody,
-  ApiBearerAuth,
   ApiParam,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
-@ApiTags('auth') // Swaggerda 'auth' tagi ostida guruhlanadi
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // Ro'yxatdan o'tish
+  // register, login, refresh token, me endpointlari
   @Post('register')
-  @ApiOperation({ 
-    summary: 'Yangi foydalanuvchi ro\'yxatdan o\'tkazish',
-    description: 'Ushbu endpoint orqali yangi foydalanuvchi ro\'yxatdan o\'tadi'
-  })
+  @ApiOperation({ summary: 'Yangi foydalanuvchi ro\'yxatdan o\'tkazish' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Foydalanuvchi ma\'lumotlari va profil rasmi',
-    schema: {
-      type: 'object',
-      properties: {
-        login: { type: 'string', example: 'john_doe' },
-        password: { type: 'string', example: 'StrongP@ssw0rd123' },
-        name: { type: 'string', example: 'John Doe' },
-        phone: { type: 'string', example: '+998901234567' },
-        email: { type: 'string', example: 'john@example.com' },
-        file: { 
-          type: 'string', 
-          format: 'binary',
-          description: 'Profil rasmi (ixtiyoriy)'
-        },
-      },
-      required: ['login', 'password', 'name', 'phone', 'email'],
-    },
+    description: 'Foydalanuvchi ma\'lumotlari',
+    type: RegisterDto,
   })
   @ApiResponse({
     status: 201,
     description: 'Foydalanuvchi muvaffaqiyatli ro\'yxatdan o\'tkazildi',
-    schema: {
-      example: {
-        id: 1,
-        login: 'john_doe',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+998901234567',
-        avatar: 'uploads/avatar-1234567890.jpg',
-        createdAt: '2024-01-15T10:30:00.000Z'
-      }
-    }
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Noto\'g\'ri ma\'lumotlar yoki foydalanuvchi allaqachon mavjud',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'Bunday login yoki email allaqachon mavjud',
-        error: 'Bad Request'
-      }
-    }
-  })
-  @ApiResponse({
-    status: 413,
-    description: 'Fayl hajmi juda katta',
-    schema: {
-      example: {
-        statusCode: 413,
-        message: 'Fayl hajmi 5MB dan oshmasligi kerak',
-        error: 'Payload Too Large'
-      }
-    }
+    type: RegisterDto,
   })
   @UseInterceptors(FileInterceptor('file'))
   register(
     @Body() registerDto: RegisterDto,
-    @UploadedFile() file?: Express.Multer.File | any,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.authService.register(registerDto, file);
   }
 
-  // Kirish
   @Post('login')
-  @ApiOperation({ 
-    summary: 'Tizimga kirish',
-    description: 'Login va parol orqali tizimga kirish'
-  })
+  @ApiOperation({ summary: 'Tizimga kirish' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
     status: 200,
@@ -118,64 +64,30 @@ export class AuthController {
           login: 'john_doe',
           name: 'John Doe',
           email: 'john@example.com',
-          avatar: 'uploads/avatar.jpg'
-        }
-      }
-    }
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Noto\'g\'ri login yoki parol',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: 'Login yoki parol noto\'g\'ri',
-        error: 'Unauthorized'
-      }
-    }
+        },
+      },
+    },
   })
   login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     return this.authService.login(loginDto, res);
   }
 
-  // Tokenni yangilash
   @Post('refresh-token')
-  @ApiOperation({ 
-    summary: 'Access tokenni yangilash',
-    description: 'Refresh token orqali yangi access token olish'
-  })
+  @ApiOperation({ summary: 'Tokenni yangilash' })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        refresh_token: { 
-          type: 'string', 
-          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' 
-        }
+        refresh_token: {
+          type: 'string',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
       },
-      required: ['refresh_token']
-    }
+    },
   })
   @ApiResponse({
     status: 200,
     description: 'Token muvaffaqiyatli yangilandi',
-    schema: {
-      example: {
-        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-        refresh_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-      }
-    }
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Yaroqsiz refresh token',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: 'Refresh token yaroqsiz yoki muddati o\'tgan',
-        error: 'Unauthorized'
-      }
-    }
   })
   refreshToken(
     @Body('refresh_token') refresh_token: string,
@@ -184,56 +96,13 @@ export class AuthController {
     return this.authService.refreshtoken(refresh_token, res);
   }
 
-  // Foydalanuvchi ma'lumotlarini olish
   @Get('me/:id')
-  @ApiOperation({ 
-    summary: 'Foydalanuvchi ma\'lumotlarini olish',
-    description: 'ID bo\'yicha foydalanuvchi ma\'lumotlarini qaytaradi'
-  })
-  @ApiParam({ 
-    name: 'id', 
-    description: 'Foydalanuvchi ID si',
-    type: 'number',
-    example: 1
-  })
-  @ApiBearerAuth() // Token talab qilinadi
+  @ApiOperation({ summary: 'Foydalanuvchi ma\'lumotlarini olish' })
+  @ApiParam({ name: 'id', type: 'number' })
+  @ApiBearerAuth()
   @ApiResponse({
     status: 200,
     description: 'Foydalanuvchi ma\'lumotlari',
-    schema: {
-      example: {
-        id: 1,
-        login: 'john_doe',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+998901234567',
-        avatar: 'uploads/avatar-1234567890.jpg',
-        createdAt: '2024-01-15T10:30:00.000Z',
-        updatedAt: '2024-01-15T10:30:00.000Z'
-      }
-    }
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Foydalanuvchi topilmadi',
-    schema: {
-      example: {
-        statusCode: 404,
-        message: 'Foydalanuvchi topilmadi',
-        error: 'Not Found'
-      }
-    }
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Token mavjud emas yoki yaroqsiz',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: 'Unauthorized',
-        error: 'Token not provided or invalid'
-      }
-    }
   })
   me(@Param('id') id: string) {
     return this.authService.me(+id);
