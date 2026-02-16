@@ -26,10 +26,14 @@ export class Student extends BaseModel {
   address: string;
 
   //ManyToOne - cascade remove YO'Q
-  @ManyToOne(() => LearningCenter, (learningCenter) => learningCenter.students, {
-    onDelete: 'CASCADE', // FAQAT shu tomonda cascade remove
-    onUpdate: 'CASCADE',
-  })
+  @ManyToOne(
+    () => LearningCenter,
+    (learningCenter) => learningCenter.students,
+    {
+      onDelete: 'CASCADE', // FAQAT shu tomonda cascade remove
+      onUpdate: 'CASCADE',
+    },
+  )
   learningCenter: LearningCenter;
 
   @Column({ type: 'int', nullable: false })

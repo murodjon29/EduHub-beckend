@@ -6,7 +6,7 @@ export class LoginDto {
     description: 'Foydalanuvchi logini',
     example: 'john_doe',
     minLength: 3,
-    maxLength: 50
+    maxLength: 50,
   })
   @IsString()
   login: string;
@@ -14,7 +14,7 @@ export class LoginDto {
   @ApiProperty({
     description: 'Parol',
     example: 'StrongP@ssw0rd123',
-    minLength: 8
+    minLength: 8,
   })
   @IsStrongPassword()
   @IsString()

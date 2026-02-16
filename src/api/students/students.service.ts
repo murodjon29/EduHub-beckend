@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from '../../core/entities/student.entity';
@@ -11,17 +16,26 @@ import { GroupStudentStatus } from '../../common/enum';
 
 @Injectable()
 export class StudentsService {
-
   constructor(
     @InjectRepository(Student) private studentRepository: Repository<Student>,
     @InjectRepository(Group) private groupRepository: Repository<Group>,
-    @InjectRepository(LearningCenter) private learningCenterRepository: Repository<LearningCenter>,
-    @InjectRepository(GroupStudent) private groupStudentRepository: Repository<GroupStudent>,
+    @InjectRepository(LearningCenter)
+    private learningCenterRepository: Repository<LearningCenter>,
+    @InjectRepository(GroupStudent)
+    private groupStudentRepository: Repository<GroupStudent>,
     private dataSource: DataSource, // Transaction uchun
-  ) { }
+  ) {}
 
   async create(createStudentDto: CreateStudentDto) {
-    const { fullName, phone, parentPhone, birthDate, learningCenterId, address, groupId } = createStudentDto;
+    const {
+      fullName,
+      phone,
+      parentPhone,
+      birthDate,
+      learningCenterId,
+      address,
+      groupId,
+    } = createStudentDto;
 
     // Transaction bilan ishlash
     const queryRunner = this.dataSource.createQueryRunner();
@@ -31,17 +45,17 @@ export class StudentsService {
     try {
       // O'quv markazi mavjudligini tekshirish
       const learningCenter = await queryRunner.manager.findOne(LearningCenter, {
-        where: { id: learningCenterId }
+        where: { id: learningCenterId },
       });
       // O'quv markazi topilmasa, NotFoundException tashlash
       if (!learningCenter) {
-        throw new NotFoundException('O\'quv markazi topilmadi');
+        throw new NotFoundException("O'quv markazi topilmadi");
       }
 
       // Guruh mavjudligini tekshirish
       const group = await queryRunner.manager.findOne(Group, {
         where: { id: groupId },
-        relations: ['groupStudents'] // O'quvchilar sonini bilish uchun
+        relations: ['groupStudents'], // O'quvchilar sonini bilish uchun
       });
 
       // Guruh topilmasa, NotFoundException tashlash
@@ -51,12 +65,19 @@ export class StudentsService {
 
       // Telefon raqami ota-ona telefon raqamidan farq qilishi kerak
       if (phone === parentPhone) {
-        throw new BadRequestException('O\'quvchining telefon raqami ota-ona telefon raqamidan farq qilishi kerak');
+        throw new BadRequestException(
+          "O'quvchining telefon raqami ota-ona telefon raqamidan farq qilishi kerak",
+        );
       }
 
       // Guruhdagi o'quvchilar sonini tekshirish
-      if (group.groupStudents && group.groupStudents.length >= group.maxStudents) {
-        throw new BadRequestException('Guruh to\'lgan, yangi o\'quvchi qo\'shib bo\'lmaydi');
+      if (
+        group.groupStudents &&
+        group.groupStudents.length >= group.maxStudents
+      ) {
+        throw new BadRequestException(
+          "Guruh to'lgan, yangi o'quvchi qo'shib bo'lmaydi",
+        );
       }
 
       // 1. Student yaratish
@@ -83,9 +104,11 @@ export class StudentsService {
       await queryRunner.manager.save(groupStudent);
 
       // 3. Guruhdagi currentStudents sonini yangilash
-      const currentStudentsCount = group.groupStudents ? group.groupStudents.length + 1 : 1;
+      const currentStudentsCount = group.groupStudents
+        ? group.groupStudents.length + 1
+        : 1;
       await queryRunner.manager.update(Group, group.id, {
-        currentStudents: currentStudentsCount
+        currentStudents: currentStudentsCount,
       });
 
       // Transactionni commit qilish
@@ -94,15 +117,14 @@ export class StudentsService {
       // O'quvchini guruhlari bilan qaytarish
       const savedStudentWithRelations = await this.studentRepository.findOne({
         where: { id: savedStudent.id },
-        relations: ['groupStudents', 'groupStudents.group', 'learningCenter']
+        relations: ['groupStudents', 'groupStudents.group', 'learningCenter'],
       });
 
       return {
         statusCode: 201,
-        message: 'O\'quvchi muvaffaqiyatli yaratildi',
+        message: "O'quvchi muvaffaqiyatli yaratildi",
         data: savedStudentWithRelations,
       };
-
     } catch (error) {
       // Xatolik bo'lsa transactionni rollback qilish
       await queryRunner.rollbackTransaction();
@@ -114,15 +136,18 @@ export class StudentsService {
   }
 
   async findLearningCenterStudents(learningCenterId: number) {
-    const students = await this.studentRepository.createQueryBuilder('student')
-    // O'quvchini guruhlari va o'quv markazi bilan birga olish
+    const students = await this.studentRepository
+      .createQueryBuilder('student')
+      // O'quvchini guruhlari va o'quv markazi bilan birga olish
       .leftJoinAndSelect('student.groupStudents', 'groupStudent')
       // Guruh ma'lumotlarini olish (masalan, guruh nomi)
       .leftJoinAndSelect('groupStudent.group', 'group')
       // O'quv markazi ma'lumotlarini olish
       .leftJoinAndSelect('student.learningCenter', 'learningCenter')
       // O'quv markaziga tegishli o'quvchilarni filtrlash
-      .where('student.learningCenterId = :learningCenterId', { learningCenterId })
+      .where('student.learningCenterId = :learningCenterId', {
+        learningCenterId,
+      })
       // O'quvchilarni ID bo'yicha tartiblash
       .orderBy('student.id', 'ASC')
       // Natijalarni olish
@@ -130,24 +155,31 @@ export class StudentsService {
 
     // Agar o'quv markaziga tegishli o'quvchilar topilmasa, NotFoundException tashlash
     if (students.length === 0 || !students) {
-      throw new NotFoundException('O\'quv markaziga tegishli o\'quvchilar topilmadi');
+      throw new NotFoundException(
+        "O'quv markaziga tegishli o'quvchilar topilmadi",
+      );
     }
 
     return {
       statusCode: 200,
-      message: 'O\'quv markaziga tegishli o\'quvchilar muvaffaqiyatli topildi',
+      message: "O'quv markaziga tegishli o'quvchilar muvaffaqiyatli topildi",
       data: students,
     };
   }
 
   async findAll() {
     const students = await this.studentRepository.find({
-      relations: ['groupStudents', 'groupStudents.group', 'learningCenter', 'payments']
+      relations: [
+        'groupStudents',
+        'groupStudents.group',
+        'learningCenter',
+        'payments',
+      ],
     });
 
     return {
       statusCode: 200,
-      message: 'Barcha o\'quvchilar muvaffaqiyatli topildi',
+      message: "Barcha o'quvchilar muvaffaqiyatli topildi",
       data: students,
     };
   }
@@ -155,16 +187,22 @@ export class StudentsService {
   async findOne(id: number) {
     const student = await this.studentRepository.findOne({
       where: { id },
-      relations: ['groupStudents', 'groupStudents.group', 'learningCenter', 'payments', 'attendances']
+      relations: [
+        'groupStudents',
+        'groupStudents.group',
+        'learningCenter',
+        'payments',
+        'attendances',
+      ],
     });
 
     if (!student) {
-      throw new NotFoundException('O\'quvchi topilmadi');
+      throw new NotFoundException("O'quvchi topilmadi");
     }
 
     return {
       statusCode: 200,
-      message: 'O\'quvchi muvaffaqiyatli topildi',
+      message: "O'quvchi muvaffaqiyatli topildi",
       data: student,
     };
   }
@@ -177,17 +215,17 @@ export class StudentsService {
     try {
       // O'quvchini tekshirish
       const student = await queryRunner.manager.findOne(Student, {
-        where: { id: studentId }
+        where: { id: studentId },
       });
 
       if (!student) {
-        throw new NotFoundException('O\'quvchi topilmadi');
+        throw new NotFoundException("O'quvchi topilmadi");
       }
 
       // Guruhni tekshirish
       const group = await queryRunner.manager.findOne(Group, {
         where: { id: groupId },
-        relations: ['groupStudents']
+        relations: ['groupStudents'],
       });
 
       if (!group) {
@@ -195,20 +233,30 @@ export class StudentsService {
       }
 
       // O'quvchi allaqachon guruhga qo'shilganligini tekshirish
-      const existingGroupStudent = await queryRunner.manager.findOne(GroupStudent, {
-        where: {
-          student: { id: studentId },
-          group: { id: groupId }
-        }
-      });
+      const existingGroupStudent = await queryRunner.manager.findOne(
+        GroupStudent,
+        {
+          where: {
+            student: { id: studentId },
+            group: { id: groupId },
+          },
+        },
+      );
 
       if (existingGroupStudent) {
-        throw new ConflictException('O\'quvchi allaqachon bu guruhga qo\'shilgan');
+        throw new ConflictException(
+          "O'quvchi allaqachon bu guruhga qo'shilgan",
+        );
       }
 
       // Guruhdagi o'quvchilar sonini tekshirish
-      if (group.groupStudents && group.groupStudents.length >= group.maxStudents) {
-        throw new BadRequestException('Guruh to\'lgan, yangi o\'quvchi qo\'shib bo\'lmaydi');
+      if (
+        group.groupStudents &&
+        group.groupStudents.length >= group.maxStudents
+      ) {
+        throw new BadRequestException(
+          "Guruh to'lgan, yangi o'quvchi qo'shib bo'lmaydi",
+        );
       }
 
       // GroupStudent yaratish
@@ -223,17 +271,16 @@ export class StudentsService {
 
       // Guruhdagi currentStudents sonini yangilash
       await queryRunner.manager.update(Group, group.id, {
-        currentStudents: group.groupStudents.length + 1
+        currentStudents: group.groupStudents.length + 1,
       });
 
       await queryRunner.commitTransaction();
 
       return {
         statusCode: 201,
-        message: 'O\'quvchi guruhga muvaffaqiyatli qo\'shildi',
+        message: "O'quvchi guruhga muvaffaqiyatli qo'shildi",
         data: groupStudent,
       };
-
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -252,13 +299,13 @@ export class StudentsService {
       const groupStudent = await queryRunner.manager.findOne(GroupStudent, {
         where: {
           student: { id: studentId },
-          group: { id: groupId }
+          group: { id: groupId },
         },
-        relations: ['group']
+        relations: ['group'],
       });
 
       if (!groupStudent) {
-        throw new NotFoundException('O\'quvchi bu guruhga qo\'shilmagan');
+        throw new NotFoundException("O'quvchi bu guruhga qo'shilmagan");
       }
 
       // Statusni o'zgartirish
@@ -269,28 +316,27 @@ export class StudentsService {
       // Guruhdagi currentStudents sonini yangilash
       const group = await queryRunner.manager.findOne(Group, {
         where: { id: groupId },
-        relations: ['groupStudents']
+        relations: ['groupStudents'],
       });
 
-      if(!group) {
+      if (!group) {
         throw new NotFoundException('Guruh topilmadi');
       }
 
       const activeStudents = group.groupStudents.filter(
-        gs => gs.status === GroupStudentStatus.ACTIVE
+        (gs) => gs.status === GroupStudentStatus.ACTIVE,
       ).length;
 
       await queryRunner.manager.update(Group, group.id, {
-        currentStudents: activeStudents
+        currentStudents: activeStudents,
       });
 
       await queryRunner.commitTransaction();
 
       return {
         statusCode: 200,
-        message: 'O\'quvchi guruhdan muvaffaqiyatli chiqarildi',
+        message: "O'quvchi guruhdan muvaffaqiyatli chiqarildi",
       };
-
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -302,37 +348,49 @@ export class StudentsService {
   async update(id: number, updateStudentDto: UpdateStudentDto) {
     const student = await this.studentRepository.findOne({
       where: { id },
-      relations: ['learningCenter']
+      relations: ['learningCenter'],
     });
 
     if (!student) {
-      throw new NotFoundException('O\'quvchi topilmadi');
+      throw new NotFoundException("O'quvchi topilmadi");
     }
 
     // Telefon raqami o'zgartirilayotgan bo'lsa, unikal ekanligini tekshirish
     if (updateStudentDto.phone && updateStudentDto.phone !== student.phone) {
       const existingPhone = await this.studentRepository.findOne({
-        where: { phone: updateStudentDto.phone }
+        where: { phone: updateStudentDto.phone },
       });
       if (existingPhone) {
-        throw new ConflictException('Bu telefon raqami bilan o\'quvchi allaqachon mavjud');
+        throw new ConflictException(
+          "Bu telefon raqami bilan o'quvchi allaqachon mavjud",
+        );
       }
     }
 
     // Ota-ona telefon raqami o'zgartirilayotgan bo'lsa, unikal ekanligini tekshirish
-    if (updateStudentDto.parentPhone && updateStudentDto.parentPhone !== student.parentPhone) {
+    if (
+      updateStudentDto.parentPhone &&
+      updateStudentDto.parentPhone !== student.parentPhone
+    ) {
       const existingParentPhone = await this.studentRepository.findOne({
-        where: { parentPhone: updateStudentDto.parentPhone }
+        where: { parentPhone: updateStudentDto.parentPhone },
       });
       if (existingParentPhone) {
-        throw new ConflictException('Bu ota-ona telefon raqami bilan o\'quvchi allaqachon mavjud');
+        throw new ConflictException(
+          "Bu ota-ona telefon raqami bilan o'quvchi allaqachon mavjud",
+        );
       }
     }
 
     // Telefon va ota-ona telefoni tengligini tekshirish
-    if (updateStudentDto.phone && updateStudentDto.parentPhone && 
-        updateStudentDto.phone === updateStudentDto.parentPhone) {
-      throw new BadRequestException('O\'quvchining telefon raqami ota-ona telefon raqamidan farq qilishi kerak');
+    if (
+      updateStudentDto.phone &&
+      updateStudentDto.parentPhone &&
+      updateStudentDto.phone === updateStudentDto.parentPhone
+    ) {
+      throw new BadRequestException(
+        "O'quvchining telefon raqami ota-ona telefon raqamidan farq qilishi kerak",
+      );
     }
 
     Object.assign(student, updateStudentDto);
@@ -340,7 +398,7 @@ export class StudentsService {
 
     return {
       statusCode: 200,
-      message: 'O\'quvchi muvaffaqiyatli yangilandi',
+      message: "O'quvchi muvaffaqiyatli yangilandi",
       data: updatedStudent,
     };
   }
@@ -353,11 +411,11 @@ export class StudentsService {
     try {
       const student = await queryRunner.manager.findOne(Student, {
         where: { id },
-        relations: ['groupStudents']
+        relations: ['groupStudents'],
       });
 
       if (!student) {
-        throw new NotFoundException('O\'quvchi topilmadi');
+        throw new NotFoundException("O'quvchi topilmadi");
       }
 
       // O'quvchini o'chirish (groupStudents CASCADE delete bilan o'chadi)
@@ -367,9 +425,8 @@ export class StudentsService {
 
       return {
         statusCode: 200,
-        message: 'O\'quvchi muvaffaqiyatli o\'chirildi',
+        message: "O'quvchi muvaffaqiyatli o'chirildi",
       };
-
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

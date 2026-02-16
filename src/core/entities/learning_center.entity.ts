@@ -48,4 +48,5 @@ export class LearningCenter extends BaseModel {
 
   @Column({ type: 'boolean', default: false })
   is_blocked: boolean;
-}``
+}
+``;

@@ -22,7 +22,7 @@ export class AuthService {
     private readonly fileService: FileService,
     private readonly jwtService: JwtService,
     private readonly bcrypt: BcryptManage,
-  ) { }
+  ) {}
 
   // Ro'yxatdan o'tish
   async register(registerDto: RegisterDto, file?: Express.Multer.File | any) {
@@ -74,19 +74,19 @@ export class AuthService {
       where: { login },
     });
     if (!learningCenter) {
-      throw new BadRequestException('Notog\'ri login');
+      throw new BadRequestException("Notog'ri login");
     }
     const isPasswordValid = await this.bcrypt.comparePassword(
       password,
       learningCenter.password,
     );
     if (!isPasswordValid) {
-      throw new BadRequestException('Notog\'ri parol');
+      throw new BadRequestException("Notog'ri parol");
     }
     // Agar hisob bloklangan bo'lsa, xatolik qaytarish
     if (learningCenter.is_blocked) {
       throw new BadRequestException(
-        'Sizning hisobingiz bloklangan, iltimos administrator bilan bog\'laning',
+        "Sizning hisobingiz bloklangan, iltimos administrator bilan bog'laning",
       );
     }
     // JWT token yaratish
@@ -168,18 +168,26 @@ export class AuthService {
     };
   }
   // Foydalanuvchi ma'lumotlarini yangilash
-  async update(id: number, updateAuthDto: UpdateAuthDto, file?: Express.Multer.File | any) {
+  async update(
+    id: number,
+    updateAuthDto: UpdateAuthDto,
+    file?: Express.Multer.File | any,
+  ) {
     const { name, email, phone } = updateAuthDto;
     // Email unikal bo'lishi kerak
-    if(await this.learningCenterRepository.findOne({ where: { email } })){
+    if (await this.learningCenterRepository.findOne({ where: { email } })) {
       throw new ConflictException('Bu email allaqachon mavjud');
     }
     // Telefon raqami unikal bo'lishi kerak
-    if(await this.learningCenterRepository.findOne({ where: { phone } })){
+    if (await this.learningCenterRepository.findOne({ where: { phone } })) {
       throw new ConflictException('Bu telefon raqami allaqachon mavjud');
     }
     // login unikal bo'lishi kerak
-    if(await this.learningCenterRepository.findOne({ where: { login: updateAuthDto.login } })){
+    if (
+      await this.learningCenterRepository.findOne({
+        where: { login: updateAuthDto.login },
+      })
+    ) {
       throw new ConflictException('Bu login allaqachon mavjud');
     }
     const learningCenter = await this.learningCenterRepository.findOne({
@@ -199,12 +207,18 @@ export class AuthService {
       logoUrl = await this.fileService.createFile(file);
     }
     // Agar parol kiritilgan bo'lsa, uni xeshlash
-    if(updateAuthDto.password){
-      const hashedPassword = await this.bcrypt.createBcryptPassword(updateAuthDto.password);
+    if (updateAuthDto.password) {
+      const hashedPassword = await this.bcrypt.createBcryptPassword(
+        updateAuthDto.password,
+      );
       learningCenter.password = hashedPassword;
     }
     // Foydalanuvchi ma'lumotlarini yangilash
-    await this.learningCenterRepository.update(id, { ...updateAuthDto, password: learningCenter.password, image: logoUrl });
+    await this.learningCenterRepository.update(id, {
+      ...updateAuthDto,
+      password: learningCenter.password,
+      image: logoUrl,
+    });
     // Yangilangan ma'lumotlarni olish
     const updatedLearningCenter = await this.learningCenterRepository.findOne({
       where: { id },
@@ -215,7 +229,6 @@ export class AuthService {
       message: 'User data updated successfully',
       data: updatedLearningCenter,
     };
-    
   }
 
   // logout

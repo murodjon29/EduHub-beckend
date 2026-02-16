@@ -11,7 +11,7 @@ import { BcryptManage } from '../../infrastructure/lib/bcrypt';
 @Module({
   imports: [
     TypeOrmModule.forFeature([LearningCenter]),
-    
+
     // JWT modulini secret bilan sozlash
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -19,17 +19,18 @@ import { BcryptManage } from '../../infrastructure/lib/bcrypt';
       global: true,
       useFactory: (configService: ConfigService) => {
         // expiresIn ni to'g'ri formatda olish
-        const expiresIn = configService.get<string>('ACCESS_TOKEN_TIME') || '24h';
-        
+        const expiresIn =
+          configService.get<string>('ACCESS_TOKEN_TIME') || '24h';
+
         return {
           secret: configService.get<string>('ACCESS_TOKEN_KEY'),
-          signOptions: { 
+          signOptions: {
             expiresIn: expiresIn as any, // TypeScript xatosini oldini olish
           },
         };
       },
     }),
-    
+
     FileModule,
   ],
   controllers: [AuthController],

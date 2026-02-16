@@ -9,36 +9,47 @@ import { Lesson } from './lesson.entity';
 
 @Entity('groups')
 export class Group extends BaseModel {
+  // Guruh nomi uchun maydon
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
+  // Guruhning boshlanish sanasi
   @Column({ type: 'date' })
   startDate: string;
 
+  // Guruhning tugash  sanasi
   @Column({ type: 'date' })
   endDate: string;
 
+  // Guruhning dars kunlarini belgilovchi maydon
   @Column({ type: 'int' })
   lessonDays: number;
 
+  // Dars vaqti uchun maydon
   @Column({ type: 'time' })
   lessonTime: string;
 
+  // Guruhning oylik to'lov miqdori uchun maydon
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   monthlyPrice: number;
 
+  // Guruhning faol yoki faol emasligini belgilovchi maydon
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  // Guruhning maksimal talaba soni uchun maydon
   @Column({ type: 'int', nullable: true })
   maxStudents: number;
 
+  // Guruhning joylashuvi yoki xonasi uchun maydon
   @Column({ type: 'varchar', length: 255, nullable: true })
   room: string;
 
+  // Darslik yoki qo'shimcha ma'lumotlar uchun maydon
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  // Talabalar sonini saqlash uchun maydon
   @Column({ type: 'int', default: 0 })
   currentStudents: number;
 
@@ -52,9 +63,6 @@ export class Group extends BaseModel {
   @JoinColumn({ name: 'teacher_id' })
   teacher: Teacher;
 
-  @Column({ type: 'int', nullable: true })
-  teacherId: number;
-
   // LearningCenter bilan bog'lanish (Many-to-One)
   @ManyToOne(() => LearningCenter, (learningCenter) => learningCenter.groups, {
     onDelete: 'CASCADE',
@@ -62,9 +70,6 @@ export class Group extends BaseModel {
   })
   @JoinColumn({ name: 'learning_center_id' })
   learningCenter: LearningCenter;
-
-  @Column({ type: 'int', nullable: false })
-  learningCenterId: number;
 
   // GroupStudent bilan bog'lanish (One-to-Many)
   @OneToMany(() => GroupStudent, (groupStudent) => groupStudent.group, {

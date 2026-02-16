@@ -39,11 +39,11 @@ import { Lesson } from '../core/entities/lesson.entity';
 @Module({
   imports: [
     // Config modulini global sozlash
-    ConfigModule.forRoot({ 
+    ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
-    
+
     // Database konfiguratsiyasi
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -62,7 +62,7 @@ import { Lesson } from '../core/entities/lesson.entity';
           Attendance,
           LastActivity,
           RequestLog,
-          Lesson
+          Lesson,
         ],
         autoLoadEntities: false,
         synchronize: true,
@@ -94,8 +94,8 @@ import { Lesson } from '../core/entities/lesson.entity';
     }),
 
     // Cache
-    CacheModule.register({ 
-      isGlobal: true 
+    CacheModule.register({
+      isGlobal: true,
     }),
 
     // JWT modulini .env dagi qiymatlar bilan sozlash
@@ -104,11 +104,12 @@ import { Lesson } from '../core/entities/lesson.entity';
       inject: [ConfigService],
       global: true,
       useFactory: (configService: ConfigService) => {
-        const expiresIn = configService.get<string>('ACCESS_TOKEN_TIME') || '24h';
-        
+        const expiresIn =
+          configService.get<string>('ACCESS_TOKEN_TIME') || '24h';
+
         return {
           secret: configService.get<string>('ACCESS_TOKEN_KEY'),
-          signOptions: { 
+          signOptions: {
             expiresIn: expiresIn as any, // TypeScript xatoligini oldini olish
           },
         };

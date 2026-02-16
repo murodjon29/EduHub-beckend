@@ -1,21 +1,28 @@
 // src/students/students.controller.ts
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
   UseGuards,
   Query,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { AddStudentToGroupDto } from './dto/add-student-to-group.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
@@ -30,18 +37,18 @@ export class StudentsController {
 
   @Post()
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({ 
-    summary: 'Yangi o\'quvchi qo\'shish',
-    description: 'Yangi o\'quvchi ma\'lumotlarini kiritish va guruhga qo\'shish'
+  @ApiOperation({
+    summary: "Yangi o'quvchi qo'shish",
+    description: "Yangi o'quvchi ma'lumotlarini kiritish va guruhga qo'shish",
   })
   @ApiBody({ type: CreateStudentDto })
   @ApiResponse({
     status: 201,
-    description: 'O\'quvchi muvaffaqiyatli yaratildi',
+    description: "O'quvchi muvaffaqiyatli yaratildi",
     schema: {
       example: {
         statusCode: 201,
-        message: 'O\'quvchi muvaffaqiyatli yaratildi',
+        message: "O'quvchi muvaffaqiyatli yaratildi",
         data: {
           id: 1,
           fullName: 'Aliyev Alisher',
@@ -58,37 +65,38 @@ export class StudentsController {
               group: {
                 id: 1,
                 name: 'Ingliz tili Beginner 2024',
-                subject: 'Ingliz tili'
+                subject: 'Ingliz tili',
               },
               joinedAt: '2024-01-15',
-              status: 'active'
-            }
-          ]
-        }
-      }
-    }
+              status: 'active',
+            },
+          ],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - Telefon raqamlari teng yoki guruh to\'lgan',
+    description: "Bad Request - Telefon raqamlari teng yoki guruh to'lgan",
     schema: {
       example: {
         statusCode: 400,
-        message: 'O\'quvchining telefon raqami ota-ona telefon raqamidan farq qilishi kerak',
-        error: 'Bad Request'
-      }
-    }
+        message:
+          "O'quvchining telefon raqami ota-ona telefon raqamidan farq qilishi kerak",
+        error: 'Bad Request',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'Not Found - O\'quv markazi yoki guruh topilmadi',
+    description: "Not Found - O'quv markazi yoki guruh topilmadi",
     schema: {
       example: {
         statusCode: 404,
-        message: 'O\'quv markazi topilmadi',
-        error: 'Not Found'
-      }
-    }
+        message: "O'quv markazi topilmadi",
+        error: 'Not Found',
+      },
+    },
   })
   @ApiResponse({
     status: 409,
@@ -96,10 +104,10 @@ export class StudentsController {
     schema: {
       example: {
         statusCode: 409,
-        message: 'Bu telefon raqami bilan o\'quvchi allaqachon mavjud',
-        error: 'Conflict'
-      }
-    }
+        message: "Bu telefon raqami bilan o'quvchi allaqachon mavjud",
+        error: 'Conflict',
+      },
+    },
   })
   create(@Body() createStudentDto: CreateStudentDto) {
     return this.studentsService.create(createStudentDto);
@@ -107,17 +115,18 @@ export class StudentsController {
 
   @Get('learning-center/:learningCenterId')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({ 
-    summary: 'O\'quv markaziga tegishli o\'quvchilarni olish',
-    description: 'Berilgan o\'quv markazi ID si bo\'yicha barcha o\'quvchilarni qaytaradi'
+  @ApiOperation({
+    summary: "O'quv markaziga tegishli o'quvchilarni olish",
+    description:
+      "Berilgan o'quv markazi ID si bo'yicha barcha o'quvchilarni qaytaradi",
   })
   @ApiResponse({
     status: 200,
-    description: 'O\'quv markaziga tegishli o\'quvchilar',
+    description: "O'quv markaziga tegishli o'quvchilar",
     schema: {
       example: {
         statusCode: 200,
-        message: 'O\'quv markaziga tegishli o\'quvchilar muvaffaqiyatli topildi',
+        message: "O'quv markaziga tegishli o'quvchilar muvaffaqiyatli topildi",
         data: [
           {
             id: 1,
@@ -129,51 +138,53 @@ export class StudentsController {
             isActive: true,
             learningCenter: {
               id: 1,
-              name: 'EduHub Learning Center'
+              name: 'EduHub Learning Center',
             },
             groupStudents: [
               {
                 id: 1,
                 group: {
                   id: 1,
-                  name: 'Ingliz tili Beginner 2024'
+                  name: 'Ingliz tili Beginner 2024',
                 },
-                status: 'active'
-              }
-            ]
-          }
-        ]
-      }
-    }
+                status: 'active',
+              },
+            ],
+          },
+        ],
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'O\'quvchilar topilmadi',
+    description: "O'quvchilar topilmadi",
     schema: {
       example: {
         statusCode: 404,
-        message: 'O\'quv markaziga tegishli o\'quvchilar topilmadi',
-        error: 'Not Found'
-      }
-    }
+        message: "O'quv markaziga tegishli o'quvchilar topilmadi",
+        error: 'Not Found',
+      },
+    },
   })
-  findLearningCenterStudents(@Param('learningCenterId') learningCenterId: string) {
+  findLearningCenterStudents(
+    @Param('learningCenterId') learningCenterId: string,
+  ) {
     return this.studentsService.findLearningCenterStudents(+learningCenterId);
   }
 
   @Get()
   @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({ 
-    summary: 'Barcha o\'quvchilarni olish',
-    description: 'Tizimdagi barcha o\'quvchilar ro\'yxati (faqat adminlar uchun)'
+  @ApiOperation({
+    summary: "Barcha o'quvchilarni olish",
+    description: "Tizimdagi barcha o'quvchilar ro'yxati (faqat adminlar uchun)",
   })
   @ApiResponse({
     status: 200,
-    description: 'Barcha o\'quvchilar ro\'yxati',
+    description: "Barcha o'quvchilar ro'yxati",
     schema: {
       example: {
         statusCode: 200,
-        message: 'Barcha o\'quvchilar muvaffaqiyatli topildi',
+        message: "Barcha o'quvchilar muvaffaqiyatli topildi",
         data: [
           {
             id: 1,
@@ -184,32 +195,37 @@ export class StudentsController {
             isActive: true,
             learningCenter: {
               id: 1,
-              name: 'EduHub Learning Center'
+              name: 'EduHub Learning Center',
             },
             payments: [],
-            attendances: []
-          }
-        ]
-      }
-    }
+            attendances: [],
+          },
+        ],
+      },
+    },
   })
   findAll() {
     return this.studentsService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.TEACHER)
-  @ApiOperation({ 
-    summary: 'O\'quvchini ID bo\'yicha olish',
-    description: 'Berilgan ID ga mos o\'quvchi ma\'lumotlari'
+  @Roles(
+    Role.LEARNING_CENTER,
+    AdminRoles.ADMIN,
+    AdminRoles.SUPERADMIN,
+    Role.TEACHER,
+  )
+  @ApiOperation({
+    summary: "O'quvchini ID bo'yicha olish",
+    description: "Berilgan ID ga mos o'quvchi ma'lumotlari",
   })
   @ApiResponse({
     status: 200,
-    description: 'O\'quvchi topildi',
+    description: "O'quvchi topildi",
     schema: {
       example: {
         statusCode: 200,
-        message: 'O\'quvchi muvaffaqiyatli topildi',
+        message: "O'quvchi muvaffaqiyatli topildi",
         data: {
           id: 1,
           fullName: 'Aliyev Alisher',
@@ -220,7 +236,7 @@ export class StudentsController {
           isActive: true,
           learningCenter: {
             id: 1,
-            name: 'EduHub Learning Center'
+            name: 'EduHub Learning Center',
           },
           groupStudents: [
             {
@@ -229,28 +245,28 @@ export class StudentsController {
                 id: 1,
                 name: 'Ingliz tili Beginner 2024',
                 lessonTime: '15:00:00',
-                lessonDays: 3
+                lessonDays: 3,
               },
               joinedAt: '2024-01-15',
-              status: 'active'
-            }
+              status: 'active',
+            },
           ],
           payments: [],
-          attendances: []
-        }
-      }
-    }
+          attendances: [],
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'O\'quvchi topilmadi',
+    description: "O'quvchi topilmadi",
     schema: {
       example: {
         statusCode: 404,
-        message: 'O\'quvchi topilmadi',
-        error: 'Not Found'
-      }
-    }
+        message: "O'quvchi topilmadi",
+        error: 'Not Found',
+      },
+    },
   })
   findOne(@Param('id') id: string) {
     return this.studentsService.findOne(+id);
@@ -258,112 +274,112 @@ export class StudentsController {
 
   @Post('add-to-group')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({ 
-    summary: 'O\'quvchini guruhga qo\'shish',
-    description: 'Mavjud o\'quvchini yangi guruhga qo\'shish'
+  @ApiOperation({
+    summary: "O'quvchini guruhga qo'shish",
+    description: "Mavjud o'quvchini yangi guruhga qo'shish",
   })
   @ApiBody({ type: AddStudentToGroupDto })
   @ApiResponse({
     status: 201,
-    description: 'O\'quvchi guruhga qo\'shildi',
+    description: "O'quvchi guruhga qo'shildi",
     schema: {
       example: {
         statusCode: 201,
-        message: 'O\'quvchi guruhga muvaffaqiyatli qo\'shildi',
+        message: "O'quvchi guruhga muvaffaqiyatli qo'shildi",
         data: {
           id: 5,
           group: {
             id: 2,
-            name: 'Matematika Advanced 2024'
+            name: 'Matematika Advanced 2024',
           },
           student: {
             id: 1,
-            fullName: 'Aliyev Alisher'
+            fullName: 'Aliyev Alisher',
           },
           joinedAt: '2024-01-20',
-          status: 'active'
-        }
-      }
-    }
+          status: 'active',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'O\'quvchi yoki guruh topilmadi',
+    description: "O'quvchi yoki guruh topilmadi",
     schema: {
       example: {
         statusCode: 404,
-        message: 'O\'quvchi topilmadi',
-        error: 'Not Found'
-      }
-    }
+        message: "O'quvchi topilmadi",
+        error: 'Not Found',
+      },
+    },
   })
   @ApiResponse({
     status: 409,
-    description: 'O\'quvchi allaqachon guruhga qo\'shilgan',
+    description: "O'quvchi allaqachon guruhga qo'shilgan",
     schema: {
       example: {
         statusCode: 409,
-        message: 'O\'quvchi allaqachon bu guruhga qo\'shilgan',
-        error: 'Conflict'
-      }
-    }
+        message: "O'quvchi allaqachon bu guruhga qo'shilgan",
+        error: 'Conflict',
+      },
+    },
   })
   addToGroup(@Body() addToGroupDto: AddStudentToGroupDto) {
     return this.studentsService.addStudentToGroup(
-      addToGroupDto.studentId, 
-      addToGroupDto.groupId
+      addToGroupDto.studentId,
+      addToGroupDto.groupId,
     );
   }
 
   @Delete('remove-from-group')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({ 
-    summary: 'O\'quvchini guruhdan chiqarish',
-    description: 'O\'quvchini guruhdan arxivlash (aktiv emas qilish)'
+  @ApiOperation({
+    summary: "O'quvchini guruhdan chiqarish",
+    description: "O'quvchini guruhdan arxivlash (aktiv emas qilish)",
   })
   @ApiBody({ type: AddStudentToGroupDto })
   @ApiResponse({
     status: 200,
-    description: 'O\'quvchi guruhdan chiqarildi',
+    description: "O'quvchi guruhdan chiqarildi",
     schema: {
       example: {
         statusCode: 200,
-        message: 'O\'quvchi guruhdan muvaffaqiyatli chiqarildi'
-      }
-    }
+        message: "O'quvchi guruhdan muvaffaqiyatli chiqarildi",
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'O\'quvchi guruhga qo\'shilmagan',
+    description: "O'quvchi guruhga qo'shilmagan",
     schema: {
       example: {
         statusCode: 404,
-        message: 'O\'quvchi bu guruhga qo\'shilmagan',
-        error: 'Not Found'
-      }
-    }
+        message: "O'quvchi bu guruhga qo'shilmagan",
+        error: 'Not Found',
+      },
+    },
   })
   removeFromGroup(@Body() removeFromGroupDto: AddStudentToGroupDto) {
     return this.studentsService.removeStudentFromGroup(
-      removeFromGroupDto.studentId, 
-      removeFromGroupDto.groupId
+      removeFromGroupDto.studentId,
+      removeFromGroupDto.groupId,
     );
   }
 
   @Patch(':id')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({ 
-    summary: 'O\'quvchi ma\'lumotlarini yangilash',
-    description: 'Berilgan ID ga mos o\'quvchi ma\'lumotlarini yangilash'
+  @ApiOperation({
+    summary: "O'quvchi ma'lumotlarini yangilash",
+    description: "Berilgan ID ga mos o'quvchi ma'lumotlarini yangilash",
   })
   @ApiBody({ type: UpdateStudentDto })
   @ApiResponse({
     status: 200,
-    description: 'O\'quvchi yangilandi',
+    description: "O'quvchi yangilandi",
     schema: {
       example: {
         statusCode: 200,
-        message: 'O\'quvchi muvaffaqiyatli yangilandi',
+        message: "O'quvchi muvaffaqiyatli yangilandi",
         data: {
           id: 1,
           fullName: 'Aliyev Alisher',
@@ -372,21 +388,21 @@ export class StudentsController {
           birthDate: '2010-05-15',
           address: 'Toshkent, Yunusobod tumani',
           isActive: true,
-          updatedAt: '2024-01-20T15:45:00.000Z'
-        }
-      }
-    }
+          updatedAt: '2024-01-20T15:45:00.000Z',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'O\'quvchi topilmadi',
+    description: "O'quvchi topilmadi",
     schema: {
       example: {
         statusCode: 404,
-        message: 'O\'quvchi topilmadi',
-        error: 'Not Found'
-      }
-    }
+        message: "O'quvchi topilmadi",
+        error: 'Not Found',
+      },
+    },
   })
   @ApiResponse({
     status: 409,
@@ -394,10 +410,10 @@ export class StudentsController {
     schema: {
       example: {
         statusCode: 409,
-        message: 'Bu telefon raqami bilan o\'quvchi allaqachon mavjud',
-        error: 'Conflict'
-      }
-    }
+        message: "Bu telefon raqami bilan o'quvchi allaqachon mavjud",
+        error: 'Conflict',
+      },
+    },
   })
   update(@Param('id') id: string, @Body() updateStudentDto: UpdateStudentDto) {
     return this.studentsService.update(+id, updateStudentDto);
@@ -405,30 +421,30 @@ export class StudentsController {
 
   @Delete(':id')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({ 
-    summary: 'O\'quvchini o\'chirish',
-    description: 'Berilgan ID ga mos o\'quvchini tizimdan o\'chirish'
+  @ApiOperation({
+    summary: "O'quvchini o'chirish",
+    description: "Berilgan ID ga mos o'quvchini tizimdan o'chirish",
   })
   @ApiResponse({
     status: 200,
-    description: 'O\'quvchi o\'chirildi',
+    description: "O'quvchi o'chirildi",
     schema: {
       example: {
         statusCode: 200,
-        message: 'O\'quvchi muvaffaqiyatli o\'chirildi'
-      }
-    }
+        message: "O'quvchi muvaffaqiyatli o'chirildi",
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'O\'quvchi topilmadi',
+    description: "O'quvchi topilmadi",
     schema: {
       example: {
         statusCode: 404,
-        message: 'O\'quvchi topilmadi',
-        error: 'Not Found'
-      }
-    }
+        message: "O'quvchi topilmadi",
+        error: 'Not Found',
+      },
+    },
   })
   remove(@Param('id') id: string) {
     return this.studentsService.remove(+id);

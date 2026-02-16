@@ -31,17 +31,17 @@ import { UpdateAuthDto } from './dto/update.dto';
 @ApiTags('auth') // Swaggerda 'auth' tagi ostida guruhlanadi
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   // Ro'yxatdan o'tish
   @Post('register')
   @ApiOperation({
-    summary: 'Yangi foydalanuvchi ro\'yxatdan o\'tkazish',
-    description: 'Ushbu endpoint orqali yangi foydalanuvchi ro\'yxatdan o\'tadi'
+    summary: "Yangi foydalanuvchi ro'yxatdan o'tkazish",
+    description: "Ushbu endpoint orqali yangi foydalanuvchi ro'yxatdan o'tadi",
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Foydalanuvchi ma\'lumotlari va profil rasmi',
+    description: "Foydalanuvchi ma'lumotlari va profil rasmi",
     schema: {
       type: 'object',
       properties: {
@@ -53,7 +53,7 @@ export class AuthController {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'Profil rasmi (ixtiyoriy)'
+          description: 'Profil rasmi (ixtiyoriy)',
         },
       },
       required: ['login', 'password', 'name', 'phone', 'email'],
@@ -61,7 +61,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Foydalanuvchi muvaffaqiyatli ro\'yxatdan o\'tkazildi',
+    description: "Foydalanuvchi muvaffaqiyatli ro'yxatdan o'tkazildi",
     schema: {
       example: {
         id: 1,
@@ -70,20 +70,20 @@ export class AuthController {
         email: 'john@example.com',
         phone: '+998901234567',
         image: 'uploads/avatar-1234567890.jpg',
-        createdAt: '2024-01-15T10:30:00.000Z'
-      }
-    }
+        createdAt: '2024-01-15T10:30:00.000Z',
+      },
+    },
   })
   @ApiResponse({
     status: 409,
-    description: 'Noto\'g\'ri ma\'lumotlar yoki foydalanuvchi allaqachon mavjud',
+    description: "Noto'g'ri ma'lumotlar yoki foydalanuvchi allaqachon mavjud",
     schema: {
       example: {
         statusCode: 409,
         message: 'Bunday login, email yoki telefon raqami allaqachon mavjud',
-        error: 'Conflict'
-      }
-    }
+        error: 'Conflict',
+      },
+    },
   })
   @ApiResponse({
     status: 413,
@@ -92,9 +92,9 @@ export class AuthController {
       example: {
         statusCode: 413,
         message: 'Fayl hajmi 5MB dan oshmasligi kerak',
-        error: 'Payload Too Large'
-      }
-    }
+        error: 'Payload Too Large',
+      },
+    },
   })
   @UseInterceptors(FileInterceptor('file'))
   register(
@@ -108,7 +108,7 @@ export class AuthController {
   @Post('login')
   @ApiOperation({
     summary: 'Tizimga kirish',
-    description: 'Login va parol orqali tizimga kirish'
+    description: 'Login va parol orqali tizimga kirish',
   })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
@@ -123,21 +123,21 @@ export class AuthController {
           login: 'john_doe',
           name: 'John Doe',
           email: 'john@example.com',
-          image: 'uploads/avatar.jpg'
-        }
-      }
-    }
+          image: 'uploads/avatar.jpg',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Noto\'g\'ri login yoki parol',
+    description: "Noto'g'ri login yoki parol",
     schema: {
       example: {
         statusCode: 400,
-        message: 'Login yoki parol noto\'g\'ri',
-        error: 'Unauthorized'
-      }
-    }
+        message: "Login yoki parol noto'g'ri",
+        error: 'Unauthorized',
+      },
+    },
   })
   login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     return this.authService.login(loginDto, res);
@@ -147,7 +147,8 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({
     summary: 'Tizimdan chiqish',
-    description: 'Refresh tokenni bekor qilib, foydalanuvchini tizimdan chiqaradi'
+    description:
+      'Refresh tokenni bekor qilib, foydalanuvchini tizimdan chiqaradi',
   })
   @ApiBearerAuth() // Token talab qilinadi
   @ApiResponse({
@@ -155,9 +156,9 @@ export class AuthController {
     description: 'Muvaffaqiyatli chiqish',
     schema: {
       example: {
-        message: 'Muvaffaqiyatli chiqish'
-      }
-    }
+        message: 'Muvaffaqiyatli chiqish',
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -166,9 +167,9 @@ export class AuthController {
       example: {
         statusCode: 401,
         message: 'Unauthorized',
-        error: 'Token not provided or invalid'
-      }
-    }
+        error: 'Token not provided or invalid',
+      },
+    },
   })
   @UseGuards(JwtGuard)
   logout(@Res({ passthrough: true }) res: Response) {
@@ -179,7 +180,7 @@ export class AuthController {
   @Post('refresh-token')
   @ApiOperation({
     summary: 'Access tokenni yangilash',
-    description: 'Refresh token orqali yangi access token olish'
+    description: 'Refresh token orqali yangi access token olish',
   })
   @ApiBody({
     schema: {
@@ -187,11 +188,11 @@ export class AuthController {
       properties: {
         refresh_token: {
           type: 'string',
-          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-        }
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
       },
-      required: ['refresh_token']
-    }
+      required: ['refresh_token'],
+    },
   })
   @ApiResponse({
     status: 200,
@@ -199,9 +200,9 @@ export class AuthController {
     schema: {
       example: {
         access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-        refresh_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-      }
-    }
+        refresh_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -209,10 +210,10 @@ export class AuthController {
     schema: {
       example: {
         statusCode: 401,
-        message: 'Refresh token yaroqsiz yoki muddati o\'tgan',
-        error: 'Unauthorized'
-      }
-    }
+        message: "Refresh token yaroqsiz yoki muddati o'tgan",
+        error: 'Unauthorized',
+      },
+    },
   })
   @ApiBearerAuth() // Token talab qilinadi
   @UseGuards(JwtGuard)
@@ -226,19 +227,19 @@ export class AuthController {
   // Foydalanuvchi ma'lumotlarini olish
   @Get('me/:id')
   @ApiOperation({
-    summary: 'Foydalanuvchi ma\'lumotlarini olish',
-    description: 'ID bo\'yicha foydalanuvchi ma\'lumotlarini qaytaradi'
+    summary: "Foydalanuvchi ma'lumotlarini olish",
+    description: "ID bo'yicha foydalanuvchi ma'lumotlarini qaytaradi",
   })
   @ApiParam({
     name: 'id',
     description: 'Foydalanuvchi ID si',
     type: 'number',
-    example: 1
+    example: 1,
   })
   @ApiBearerAuth() // Token talab qilinadi
   @ApiResponse({
     status: 200,
-    description: 'Foydalanuvchi ma\'lumotlari',
+    description: "Foydalanuvchi ma'lumotlari",
     schema: {
       example: {
         id: 1,
@@ -248,9 +249,9 @@ export class AuthController {
         phone: '+998901234567',
         avatar: 'uploads/avatar-1234567890.jpg',
         createdAt: '2024-01-15T10:30:00.000Z',
-        updatedAt: '2024-01-15T10:30:00.000Z'
-      }
-    }
+        updatedAt: '2024-01-15T10:30:00.000Z',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
@@ -259,9 +260,9 @@ export class AuthController {
       example: {
         statusCode: 404,
         message: 'Foydalanuvchi topilmadi',
-        error: 'Not Found'
-      }
-    }
+        error: 'Not Found',
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -270,9 +271,9 @@ export class AuthController {
       example: {
         statusCode: 401,
         message: 'Unauthorized',
-        error: 'Token not provided or invalid'
-      }
-    }
+        error: 'Token not provided or invalid',
+      },
+    },
   })
   @UseGuards(JwtGuard, SelfGuard)
   me(@Param('id') id: string) {
@@ -285,7 +286,7 @@ export class AuthController {
   @UseGuards(JwtGuard, SelfGuard)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Foydalanuvchi ma\'lumotlari va profil rasmi',
+    description: "Foydalanuvchi ma'lumotlari va profil rasmi",
     schema: {
       type: 'object',
       properties: {
@@ -297,26 +298,25 @@ export class AuthController {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'Profil rasmi (ixtiyoriy)'
+          description: 'Profil rasmi (ixtiyoriy)',
         },
       },
       required: ['login', 'password', 'name', 'phone', 'email'],
     },
   })
   @ApiOperation({
-    summary: 'Foydalanuvchi ma\'lumotlarini yangilash',
-    description: 'ID bo\'yicha foydalanuvchi ma\'lumotlarini yangilash'
+    summary: "Foydalanuvchi ma'lumotlarini yangilash",
+    description: "ID bo'yicha foydalanuvchi ma'lumotlarini yangilash",
   })
   @ApiParam({
     name: 'id',
     description: 'Foydalanuvchi ID si',
     type: 'number',
-    example: 1
+    example: 1,
   })
-
   @ApiResponse({
     status: 200,
-    description: 'Foydalanuvchi ma\'lumotlari muvaffaqiyatli yangilandi',
+    description: "Foydalanuvchi ma'lumotlari muvaffaqiyatli yangilandi",
     schema: {
       example: {
         id: 1,
@@ -324,9 +324,9 @@ export class AuthController {
         name: 'John Doe Updated',
         email: 'john_updated@example.com',
         phone: '+998901234567',
-        image: 'uploads/avatar-updated.jpg'
-      }
-    }
+        image: 'uploads/avatar-updated.jpg',
+      },
+    },
   })
   @ApiResponse({
     status: 404,
@@ -335,9 +335,9 @@ export class AuthController {
       example: {
         statusCode: 404,
         message: 'Foydalanuvchi topilmadi',
-        error: 'Not Found'
-      }
-    }
+        error: 'Not Found',
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -346,9 +346,9 @@ export class AuthController {
       example: {
         statusCode: 401,
         message: 'Unauthorized',
-        error: 'Token not provided or invalid'
-      }
-    }
+        error: 'Token not provided or invalid',
+      },
+    },
   })
   @UseGuards(JwtGuard, SelfGuard)
   update(
