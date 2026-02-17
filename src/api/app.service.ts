@@ -6,7 +6,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as fs from 'fs';
-import cors from 'cors';
 import { AllExceptionsFilter } from '../infrastructure/lib';
 import { config } from '../config';
 
@@ -14,15 +13,24 @@ export default class Application {
   public static async main(): Promise<void> {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    // ================= GLOBAL SETTINGS =================
+    // ================= GLOBAL FILTER =================
     app.useGlobalFilters(new AllExceptionsFilter());
+
+    // ================= COOKIE =================
     app.use(cookieParser());
+
+    // ================= CORS (FAqat BITTA JOYDA) =================
     app.enableCors({
-      origin: '*',
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      origin: [
+        'http://localhost:5173',      // local frontend
+        'https://app.novdaunion.uz',  // production frontend
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
     });
-    // ✅ ValidationPipe with exceptionFactory
+
+    // ================= VALIDATION PIPE =================
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -57,18 +65,20 @@ export default class Application {
     );
 
     // ================= STATIC FILES =================
-    const uploadsPath = join(process.cwd(), 'uploads'); // root loyihadan absolute path
+    const uploadsPath = join(process.cwd(), 'uploads');
     if (!fs.existsSync(uploadsPath)) {
-      fs.mkdirSync(uploadsPath, { recursive: true }); // papka bo‘lmasa yaratadi
+      fs.mkdirSync(uploadsPath, { recursive: true });
     }
+
     app.useStaticAssets(uploadsPath, {
       prefix: '/api/v1/uploads',
     });
 
-    // ================= GLOBAL PREFIX & SWAGGER =================
+    // ================= PREFIX & SWAGGER =================
     const api = 'api/v1';
     app.setGlobalPrefix(api);
-    const config_swagger = new DocumentBuilder()
+
+    const swaggerConfig = new DocumentBuilder()
       .setTitle('EduHub REST API')
       .setVersion('1.0')
       .addBearerAuth(
@@ -81,22 +91,13 @@ export default class Application {
         'Authorization',
       )
       .build();
-    const documentFactory = () =>
-      SwaggerModule.createDocument(app, config_swagger);
-    SwaggerModule.setup(api, app, documentFactory);
 
-    app.use(
-      cors({
-        origin: '*',
-        credentials: true,
-      }),
-    );
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup(api, app, document);
 
     // ================= START SERVER =================
-    await app.listen(config.PORT ?? 3000, () => {
-      console.log(`Server running on port ${config.PORT}`);
-      console.log(`http://localhost:${config.PORT}/api/v1`);
-      console.log(`https://app.novdaunion.uz/api/v1`);
-    });
+    await app.listen(config.PORT ?? 3000);
+
+    console.log(`Server running on port ${config.PORT ?? 3000}`);
   }
 }
