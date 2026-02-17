@@ -87,7 +87,7 @@ export default class Application {
 
     app.use(
       cors({
-        origin: '*',
+        origin: true,
         credentials: true,
       }),
     );

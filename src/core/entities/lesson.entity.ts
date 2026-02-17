@@ -20,9 +20,6 @@ export class Lesson extends BaseModel {
   @Column({ type: 'time', nullable: true })
   endTime: string; // Tugash vaqti
 
-  @Column({ type: 'boolean', default: false })
-  isCompleted: boolean; // Dars o'tildimi?
-
   // Group bilan bog'lanish (Many-to-One)
   @ManyToOne(() => Group, (group) => group.lessons, {
     onDelete: 'CASCADE',
@@ -31,9 +28,6 @@ export class Lesson extends BaseModel {
   @JoinColumn({ name: 'group_id' })
   group: Group;
 
-  @Column({ type: 'int', nullable: false })
-  groupId: number;
-
   // Teacher bilan bog'lanish (Many-to-One)
   @ManyToOne(() => Teacher, (teacher) => teacher.lessons, {
     onDelete: 'SET NULL',
@@ -41,7 +35,4 @@ export class Lesson extends BaseModel {
   })
   @JoinColumn({ name: 'teacher_id' })
   teacher: Teacher;
-
-  @Column({ type: 'int', nullable: true })
-  teacherId: number;
 }

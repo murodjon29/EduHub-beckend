@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   HttpStatus,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -25,6 +26,11 @@ import {
 import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { SelfGuard } from '../../common/guard/self.guard';
+import { JwtGuard } from '../../common/guard/jwt-auth.guard';
+import { RolesGuard } from '../../common/guard/roles.guard';
+import { Roles } from '../../common/decorator/roles.decorator';
+import { AdminRoles, Role } from '../../common/enum';
 
 // Response DTO'lar
 class GroupResponseDto {
@@ -69,6 +75,8 @@ class ApiResponseDto<T> {
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
@@ -187,6 +195,8 @@ export class GroupController {
     return this.groupService.create(createGroupDto);
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
   @Get()
   @ApiOperation({
     summary: 'Barcha guruhlarni olish',
@@ -274,6 +284,8 @@ export class GroupController {
     return this.groupService.findAll();
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
   @Get('teacher/:teacherId')
   @ApiOperation({
     summary: "O'qituvchi bo'yicha guruhlarni olish",
@@ -322,6 +334,8 @@ export class GroupController {
     return this.groupService.findByTeacher(teacherId);
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
   @Get('learning-center/:centerId')
   @ApiOperation({
     summary: "O'quv markazi bo'yicha guruhlarni olish",
@@ -372,6 +386,8 @@ export class GroupController {
     return this.groupService.findByLearningCenter(centerId);
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
   @Get(':id')
   @ApiOperation({
     summary: 'Bitta guruhni olish',
@@ -462,6 +478,8 @@ export class GroupController {
     return this.groupService.findOne(id);
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
   @Patch(':id')
   @ApiOperation({
     summary: 'Guruhni yangilash',
@@ -552,7 +570,8 @@ export class GroupController {
   ) {
     return this.groupService.update(id, updateGroupDto);
   }
-
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
