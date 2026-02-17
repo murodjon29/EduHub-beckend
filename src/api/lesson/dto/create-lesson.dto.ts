@@ -1,20 +1,33 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsString, IsOptional, IsDateString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLessonDto {
-    @IsString()
-    name: string;
+  @ApiProperty({ example: 'Matematika 1-dars' })
+  @IsString()
+  name: string;
 
-    @IsString()
-    description: string;
-    
-    @IsNumber()
-    groupId: number;
-    @IsNumber()
-    teacherId: number;
-    @IsString()
-    lessonDate: string;
-    @IsString()
-    startTime: string;
-    @IsString()
-    endTime: string;
+  @ApiProperty({ example: 'Algebra asoslari' })
+  @IsString()
+  @IsOptional()
+  description: string;
+
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  groupId: number;
+
+  @ApiProperty({ example: 2 })
+  @IsNumber()
+  teacherId: number;
+
+  @ApiProperty({ example: '2026-02-17' })
+  @IsDateString()
+  lessonDate: string;
+
+  @ApiProperty({ example: '14:00:00' })
+  @IsString()
+  startTime: string;
+
+  @ApiProperty({ example: '16:00:00' })
+  @IsString()
+  endTime: string;
 }
