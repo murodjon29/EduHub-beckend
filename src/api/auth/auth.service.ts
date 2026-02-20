@@ -22,7 +22,7 @@ export class AuthService {
     private readonly fileService: FileService,
     private readonly jwtService: JwtService,
     private readonly bcrypt: BcryptManage,
-  ) {}
+  ) { }
 
   // Ro'yxatdan o'tish
   async register(registerDto: RegisterDto, file?: Express.Multer.File | any) {
@@ -171,69 +171,70 @@ export class AuthService {
   async update(
     id: number,
     updateAuthDto: UpdateAuthDto,
-    file?: Express.Multer.File | any,
+    file?: Express.Multer.File,
   ) {
-    const { name, email, phone } = updateAuthDto;
-    // Email unikal bo'lishi kerak
-    const emailExists = await this.learningCenterRepository.findOne({
-      where: { email },
-    })
-    if (emailExists) {
-      throw new ConflictException('Bu email allaqachon mavjud');
-    }
-    // Telefon raqami unikal bo'lishi kerak
-    if (await this.learningCenterRepository.findOne({ where: { phone } })) {
-      throw new ConflictException('Bu telefon raqami allaqachon mavjud');
-    }
-    // login unikal bo'lishi kerak
-    if (
-      await this.learningCenterRepository.findOne({
-        where: { login: updateAuthDto.login },
-      })
-    ) {
-      throw new ConflictException('Bu login allaqachon mavjud');
-    }
     const learningCenter = await this.learningCenterRepository.findOne({
       where: { id },
     });
-    // Agar foydalanuvchi topilmasa, xatolik qaytarish
+
     if (!learningCenter) {
       throw new NotFoundException('User not found');
     }
-    // Foydalanuvchi ma'lumotlarini olish
-    let logoUrl = learningCenter.image;
-    // Agar yangi fayl kiritilgan bo'lsa, eski faylni o'chirish va yangi faylni saqlash
-    if (file) {
-      if (logoUrl) {
-        await this.fileService.deleteFile(logoUrl);
+
+    // EMAIL CHECK
+    if (updateAuthDto.email && updateAuthDto.email !== learningCenter.email) {
+      const exists = await this.learningCenterRepository.findOne({
+        where: { email: updateAuthDto.email },
+      });
+      if (exists && exists.id !== id) {
+        throw new ConflictException('Bu email allaqachon mavjud');
       }
-      logoUrl = await this.fileService.createFile(file);
     }
-    // Agar parol kiritilgan bo'lsa, uni xeshlash
+
+    // PHONE CHECK
+    if (updateAuthDto.phone && updateAuthDto.phone !== learningCenter.phone) {
+      const exists = await this.learningCenterRepository.findOne({
+        where: { phone: updateAuthDto.phone },
+      });
+      if (exists && exists.id !== id) {
+        throw new ConflictException('Bu telefon raqami allaqachon mavjud');
+      }
+    }
+
+    // LOGIN CHECK
+    if (updateAuthDto.login && updateAuthDto.login !== learningCenter.login) {
+      const exists = await this.learningCenterRepository.findOne({
+        where: { login: updateAuthDto.login },
+      });
+      if (exists && exists.id !== id) {
+        throw new ConflictException('Bu login allaqachon mavjud');
+      }
+    }
+
+    // FILE
+    if (file) {
+      if (learningCenter.image) {
+        await this.fileService.deleteFile(learningCenter.image);
+      }
+      learningCenter.image = await this.fileService.createFile(file);
+    }
+
+    // PASSWORD
     if (updateAuthDto.password) {
-      const hashedPassword = await this.bcrypt.createBcryptPassword(
-        updateAuthDto.password,
-      );
-      learningCenter.password = hashedPassword;
+      learningCenter.password =
+        await this.bcrypt.createBcryptPassword(updateAuthDto.password);
     }
-    // Foydalanuvchi ma'lumotlarini yangilash
-    await this.learningCenterRepository.update(id, {
-      ...updateAuthDto,
-      password: learningCenter.password,
-      image: logoUrl,
-    });
-    // Yangilangan ma'lumotlarni olish
-    const updatedLearningCenter = await this.learningCenterRepository.findOne({
-      where: { id },
-    });
-    // Yangilangan ma'lumotlarni qaytarish
+
+    // QOLGAN FIELDLAR
+    Object.assign(learningCenter, updateAuthDto);
+
+    await this.learningCenterRepository.save(learningCenter);    
     return {
       status_code: 200,
       message: 'User data updated successfully',
-      data: updatedLearningCenter,
+      data: learningCenter,
     };
   }
-
   // logout
   async logout(res: Response) {
     try {

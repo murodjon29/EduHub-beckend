@@ -9,6 +9,7 @@ import {
   Param,
   UseGuards,
   Patch,
+  Put
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -284,6 +285,7 @@ export class AuthController {
   @Patch('update/:id')
   @ApiBearerAuth()
   @UseGuards(JwtGuard, SelfGuard)
+  @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: "Foydalanuvchi ma'lumotlari va profil rasmi",
