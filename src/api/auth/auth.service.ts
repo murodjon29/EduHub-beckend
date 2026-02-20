@@ -175,7 +175,10 @@ export class AuthService {
   ) {
     const { name, email, phone } = updateAuthDto;
     // Email unikal bo'lishi kerak
-    if (await this.learningCenterRepository.findOne({ where: { email } })) {
+    const emailExists = await this.learningCenterRepository.findOne({
+      where: { email },
+    })
+    if (emailExists) {
       throw new ConflictException('Bu email allaqachon mavjud');
     }
     // Telefon raqami unikal bo'lishi kerak
