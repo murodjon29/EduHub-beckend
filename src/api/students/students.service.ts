@@ -153,13 +153,7 @@ export class StudentsService {
       // Natijalarni olish
       .getMany();
 
-    // Agar o'quv markaziga tegishli o'quvchilar topilmasa, NotFoundException tashlash
-    if (students.length === 0 || !students) {
-      throw new NotFoundException(
-        "O'quv markaziga tegishli o'quvchilar topilmadi",
-      );
-    }
-
+    
     return {
       statusCode: 200,
       message: "O'quv markaziga tegishli o'quvchilar muvaffaqiyatli topildi",
