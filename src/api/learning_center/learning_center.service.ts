@@ -23,6 +23,15 @@ export class LearningCenterService {
       await this.fileService.deleteFile(lerningCenter.image);
       lerningCenter.image = "";
       await this.learningCenterRepository.save(lerningCenter);
+      return {
+        success: true,
+        message: 'Profile image deleted successfully',
+      }
+    } else {
+      return {
+        success: false,
+        message: 'Profile image not found',
+      }
     }
   }
 }
