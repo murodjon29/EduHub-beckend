@@ -6,17 +6,24 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { Attendance } from '../../core/entities/attendance.entity';
+import { JwtGuard } from '../../common/guard/jwt-auth.guard';
+import { RolesGuard } from '../../common/guard/roles.guard';
+import { Roles } from '../../common/decorator/roles.decorator';
+import { Role } from '../../common/enum';
 
 @ApiTags('Attendances')
 @Controller('attendances')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Post()
   @ApiOperation({ summary: 'Yangi davomat qo‘shish' })
   @ApiBody({
@@ -75,6 +82,8 @@ export class AttendanceController {
     return this.attendanceService.create(dto);
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Get()
   @ApiOperation({ summary: 'Barcha davomalarni olish' })
   @ApiResponse({
@@ -85,6 +94,8 @@ export class AttendanceController {
     return this.attendanceService.findAll();
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Get(':id')
   @ApiOperation({ summary: 'Bitta davomatni olish' })
   @ApiResponse({
@@ -106,6 +117,8 @@ export class AttendanceController {
     return this.attendanceService.findOne(id);
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Delete(':id')
   @ApiOperation({ summary: 'Davomatni o‘chirish' })
   @ApiResponse({

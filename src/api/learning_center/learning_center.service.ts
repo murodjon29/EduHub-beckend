@@ -1,26 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateLearningCenterDto } from './dto/create-learning_center.dto';
 import { UpdateLearningCenterDto } from './dto/update-learning_center.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { LearningCenter } from '../../core/entities/learning_center.entity';
+import { Repository } from 'typeorm';
+import { FileService } from '../file/file.service';
 
 @Injectable()
 export class LearningCenterService {
-  create(createLearningCenterDto: CreateLearningCenterDto) {
-    return 'This action adds a new learningCenter';
-  }
+  constructor(
+    @InjectRepository(LearningCenter) 
+    private readonly learningCenterRepository: Repository<LearningCenter>,
+    private readonly fileService: FileService
+  ) {}
 
-  findAll() {
-    return `This action returns all learningCenter`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} learningCenter`;
-  }
-
-  update(id: number, updateLearningCenterDto: UpdateLearningCenterDto) {
-    return `This action updates a #${id} learningCenter`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} learningCenter`;
+  async deleteProfileImage(lerningCenterId: number) {
+    const lerningCenter = await this.learningCenterRepository.findOne({
+      where: { id: lerningCenterId },
+    });
+    if(!lerningCenter){ throw new NotFoundException('User not found') }
+    if(lerningCenter.image){
+      await this.fileService.deleteFile(lerningCenter.image);
+      lerningCenter.image = "";
+      await this.learningCenterRepository.save(lerningCenter);
+    }
   }
 }
