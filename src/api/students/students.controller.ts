@@ -36,6 +36,7 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Post()
+  @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
   @ApiOperation({
     summary: "Yangi o'quvchi qo'shish",
