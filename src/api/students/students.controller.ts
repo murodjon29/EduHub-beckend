@@ -114,6 +114,68 @@ export class StudentsController {
     return this.studentsService.create(createStudentDto);
   }
 
+   @UseGuards(JwtGuard, RolesGuard)
+  @Post('add-to-group')
+  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @ApiOperation({
+    summary: "O'quvchini guruhga qo'shish",
+    description: "Mavjud o'quvchini yangi guruhga qo'shish",
+  })
+  @ApiBody({ type: AddStudentToGroupDto })
+  @ApiResponse({
+    status: 201,
+    description: "O'quvchi guruhga qo'shildi",
+    schema: {
+      example: {
+        statusCode: 201,
+        message: "O'quvchi guruhga muvaffaqiyatli qo'shildi",
+        data: {
+          id: 5,
+          group: {
+            id: 2,
+            name: 'Matematika Advanced 2024',
+          },
+          student: {
+            id: 1,
+            fullName: 'Aliyev Alisher',
+          },
+          joinedAt: '2024-01-20',
+          status: 'active',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "O'quvchi yoki guruh topilmadi",
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "O'quvchi topilmadi",
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "O'quvchi allaqachon guruhga qo'shilgan",
+    schema: {
+      example: {
+        statusCode: 409,
+        message: "O'quvchi allaqachon bu guruhga qo'shilgan",
+        error: 'Conflict',
+      },
+    },
+  })
+  addToGroup(@Body() addToGroupDto: AddStudentToGroupDto) {
+    return this.studentsService.addStudentToGroup(
+      addToGroupDto.studentId,
+      addToGroupDto.groupId,
+    );
+  }
+
+
+  @UseGuards(JwtGuard, RolesGuard)
   @Get('learning-center/:learningCenterId')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
   @ApiOperation({
@@ -174,6 +236,7 @@ export class StudentsController {
   }
 
   @Get()
+  @UseGuards(JwtGuard, RolesGuard)
   @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
   @ApiOperation({
     summary: "Barcha o'quvchilarni olish",
@@ -209,6 +272,7 @@ export class StudentsController {
     return this.studentsService.findAll();
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
   @Get(':id')
   @Roles(
     Role.LEARNING_CENTER,
@@ -273,65 +337,9 @@ export class StudentsController {
     return this.studentsService.findOne(+id);
   }
 
-  @Post('add-to-group')
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({
-    summary: "O'quvchini guruhga qo'shish",
-    description: "Mavjud o'quvchini yangi guruhga qo'shish",
-  })
-  @ApiBody({ type: AddStudentToGroupDto })
-  @ApiResponse({
-    status: 201,
-    description: "O'quvchi guruhga qo'shildi",
-    schema: {
-      example: {
-        statusCode: 201,
-        message: "O'quvchi guruhga muvaffaqiyatli qo'shildi",
-        data: {
-          id: 5,
-          group: {
-            id: 2,
-            name: 'Matematika Advanced 2024',
-          },
-          student: {
-            id: 1,
-            fullName: 'Aliyev Alisher',
-          },
-          joinedAt: '2024-01-20',
-          status: 'active',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "O'quvchi yoki guruh topilmadi",
-    schema: {
-      example: {
-        statusCode: 404,
-        message: "O'quvchi topilmadi",
-        error: 'Not Found',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 409,
-    description: "O'quvchi allaqachon guruhga qo'shilgan",
-    schema: {
-      example: {
-        statusCode: 409,
-        message: "O'quvchi allaqachon bu guruhga qo'shilgan",
-        error: 'Conflict',
-      },
-    },
-  })
-  addToGroup(@Body() addToGroupDto: AddStudentToGroupDto) {
-    return this.studentsService.addStudentToGroup(
-      addToGroupDto.studentId,
-      addToGroupDto.groupId,
-    );
-  }
 
+ 
+  @UseGuards(JwtGuard, RolesGuard)
   @Delete('remove-from-group')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
   @ApiOperation({
@@ -367,6 +375,7 @@ export class StudentsController {
     );
   }
 
+  @UseGuards(JwtGuard, RolesGuard)
   @Patch(':id')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
   @ApiOperation({
