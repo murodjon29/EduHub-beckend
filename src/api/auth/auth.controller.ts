@@ -151,7 +151,7 @@ export class AuthController {
     description:
       'Refresh tokenni bekor qilib, foydalanuvchini tizimdan chiqaradi',
   })
-  @ApiBearerAuth() // Token talab qilinadi
+  @ApiBearerAuth("Authorization") // Token talab qilinadi
   @ApiResponse({
     status: 200,
     description: 'Muvaffaqiyatli chiqish',
@@ -216,7 +216,7 @@ export class AuthController {
       },
     },
   })
-  @ApiBearerAuth() // Token talab qilinadi
+  @ApiBearerAuth("Authorization") // Token talab qilinadi
   @UseGuards(JwtGuard)
   refreshToken(
     @Body('refresh_token') refresh_token: string,
@@ -283,7 +283,7 @@ export class AuthController {
 
   // Foydalanuvchi ma'lumotlarini yangilash
   @Patch('update/:id')
-  @ApiBearerAuth()
+  @ApiBearerAuth("Authorization")
   @UseGuards(JwtGuard, SelfGuard)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')

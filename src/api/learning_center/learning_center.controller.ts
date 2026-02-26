@@ -14,6 +14,7 @@ import {
   ApiParam,
   ApiResponse,
   ApiNotFoundResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { SelfGuard } from '../../common/guard/self.guard';
@@ -26,6 +27,7 @@ export class LearningCenterController {
   ) {}
 
   @UseGuards(JwtGuard, SelfGuard)
+  @ApiBearerAuth("Authorization")
   @Delete(':id/profile-image')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

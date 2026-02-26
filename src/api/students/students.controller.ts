@@ -31,7 +31,7 @@ import { AdminRoles, Role } from '../../common/enum';
 @ApiTags('students')
 @Controller('students')
 @UseGuards(JwtGuard, RolesGuard)
-@ApiBearerAuth()
+@ApiBearerAuth("Authorization")
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 

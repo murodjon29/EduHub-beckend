@@ -18,7 +18,7 @@ import { CreateLessonDto } from './dto/create-lesson.dto';
 import { Lesson } from '../../core/entities/lesson.entity';
 
 @ApiTags('Lessons')
-@ApiBearerAuth()
+@ApiBearerAuth("Authorization")
 @Controller('lessons')
 export class LessonController {
   constructor(private readonly lessonService: LessonService) {}
