@@ -14,6 +14,59 @@ export class LearningCenterService {
     private readonly fileService: FileService
   ) {}
 
+
+
+  async findLearningCenterStudents(learningCenterId: number) {
+    const students = await this.learningCenterRepository
+      .createQueryBuilder('learningCenter')
+      // O'quvchini guruhlari va o'quv markazi bilan birga olish
+      .leftJoinAndSelect('learningCenter.students', 'student')
+      // Guruh ma'lumotlarini olish (masalan, guruh nomi)
+      .leftJoinAndSelect('student.groupStudents', 'groupStudent')
+      // Guruh ma'lumotlarini olish (masalan, guruh nomi)
+      .leftJoinAndSelect('groupStudent.group', 'group')
+      // O'quv markazi ma'lumotlarini olish
+      .leftJoinAndSelect('student.learningCenter', 'learningCenter')
+      // O'quv markaziga tegishli o'quvchilarni filtrlash
+      .where('student.learningCenter.id = :learningCenterId', {
+        learningCenterId,
+      })
+      // O'quvchilarni ID bo'yicha tartiblash
+      .orderBy('student.id', 'ASC')
+      // Natijalarni olish
+      .getMany();
+
+    
+    return {
+      statusCode: 200,
+      message: "O'quv markaziga tegishli o'quvchilar muvaffaqiyatli topildi",
+      data: students,
+    };
+  }
+
+  async getTeachersByLearningCenter(learningCenterId: number) {
+    // O'quv markaziga tegishli o'qituvchilarni olish
+    const teachers = await this.learningCenterRepository
+      .createQueryBuilder('learningCenter')
+      // O'qituvchi ma'lumotlarini olish
+      .leftJoinAndSelect('learningCenter.teachers', 'teacher')
+      // O'quv markazi bo'yicha filtrlash
+      .where('teacher.learningCenter.id = :learningCenterId', {
+        learningCenterId,
+      })
+      // O'qituvchilarni ID bo'yicha tartiblash
+      .orderBy('teacher.id', 'ASC')
+      // Natijalarni olish
+      .getMany();
+    return {
+      statusCode: 200,
+      message: "O'quv markaziga tegishli o'qituvchilar muvaffaqiyatli topildi",
+      data: teachers,
+    };
+  }
+
+
+
   async deleteProfileImage(lerningCenterId: number) {
     const lerningCenter = await this.learningCenterRepository.findOne({
       where: { id: lerningCenterId },

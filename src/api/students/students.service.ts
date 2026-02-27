@@ -135,32 +135,7 @@ export class StudentsService {
     }
   }
 
-  async findLearningCenterStudents(learningCenterId: number) {
-    const students = await this.studentRepository
-      .createQueryBuilder('student')
-      // O'quvchini guruhlari va o'quv markazi bilan birga olish
-      .leftJoinAndSelect('student.groupStudents', 'groupStudent')
-      // Guruh ma'lumotlarini olish (masalan, guruh nomi)
-      .leftJoinAndSelect('groupStudent.group', 'group')
-      // O'quv markazi ma'lumotlarini olish
-      .leftJoinAndSelect('student.learningCenter', 'learningCenter')
-      // O'quv markaziga tegishli o'quvchilarni filtrlash
-      .where('student.learningCenterId = :learningCenterId', {
-        learningCenterId,
-      })
-      // O'quvchilarni ID bo'yicha tartiblash
-      .orderBy('student.id', 'ASC')
-      // Natijalarni olish
-      .getMany();
-
-    
-    return {
-      statusCode: 200,
-      message: "O'quv markaziga tegishli o'quvchilar muvaffaqiyatli topildi",
-      data: students,
-    };
-  }
-
+  
   async findAll() {
     const students = await this.studentRepository.find({
       relations: [

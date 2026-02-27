@@ -317,77 +317,7 @@ export class TeachersController {
     return this.teachersService.findAll();
   }
 
-  @ApiQuery({
-    name: 'learningCenterId',
-    description: "O'quv markazi ID si",
-    required: true,
-    example: 1,
-  })
-  @ApiBody({
-    description: "O'quv markazi ID si",
-    type: Number,
-  })
-  @ApiResponse({
-    status: 200,
-    description: "O'quv markaziga tegishli o'qituvchilar ro'yxati",
-    schema: {
-      example: {
-        statusCode: 200,
-        message:
-          "O'quv markaziga tegishli o'qituvchilar muvaffaqiyatli topildi",
-        data: [
-          {
-            id: 1,
-            login: 'teacher_john',
-            name: 'John',
-            lastName: 'Doe',
-            email: '  john.doe@example.com',
-            phone: '+998901234567',
-            subject: 'Matematika',
-            salary: 5000000,
-            role: 'teacher',
-            learningCenterId: 1,
-            created_at: '2024-01-15T10:30:00.000Z',
-            updated_at: '2024-01-15T10:30:00.000Z',
-          },
-          {
-            id: 2,
-            login: 'teacher_jane',
-            name: 'Jane',
-            lastName: 'Smith',
-            email: '  jane.smith@example.com',
-            phone: '+998901234568',
-            subject: 'Fizika',
-            salary: 5500000,
-            role: 'teacher',
-            learningCenterId: 1,
-            created_at: '2024-01-16T09:20:00.000Z',
-            updated_at: '2024-01-16T09:20:00.000Z',
-          },
-        ],
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "O'quv markazi topilmadi",
-    schema: {
-      example: {
-        statusCode: 404,
-        message: "O'quv markazi topilmadi",
-        error: 'Not Found',
-      },
-    },
-  })
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiBearerAuth("Authorization")
-  @Get('learning-center/teachers')
-  async findLearningCenterTeachers(
-    @Query('learningCenterId') learningCenterId: string,
-  ) {
-    return this.teachersService.getTeachersByLearningCenter(+learningCenterId);
-  }
+  
 
   @Get(':id')
   @UseGuards(JwtGuard, SelfGuard)

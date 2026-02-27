@@ -174,67 +174,6 @@ export class StudentsController {
     );
   }
 
-
-  @UseGuards(JwtGuard, RolesGuard)
-  @Get('learning-center/:learningCenterId')
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({
-    summary: "O'quv markaziga tegishli o'quvchilarni olish",
-    description:
-      "Berilgan o'quv markazi ID si bo'yicha barcha o'quvchilarni qaytaradi",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "O'quv markaziga tegishli o'quvchilar",
-    schema: {
-      example: {
-        statusCode: 200,
-        message: "O'quv markaziga tegishli o'quvchilar muvaffaqiyatli topildi",
-        data: [
-          {
-            id: 1,
-            fullName: 'Aliyev Alisher',
-            phone: '+998901234567',
-            parentPhone: '+998901234568',
-            birthDate: '2010-05-15',
-            address: 'Toshkent, Chilonzor tumani',
-            isActive: true,
-            learningCenter: {
-              id: 1,
-              name: 'EduHub Learning Center',
-            },
-            groupStudents: [
-              {
-                id: 1,
-                group: {
-                  id: 1,
-                  name: 'Ingliz tili Beginner 2024',
-                },
-                status: 'active',
-              },
-            ],
-          },
-        ],
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "O'quvchilar topilmadi",
-    schema: {
-      example: {
-        statusCode: 404,
-        message: "O'quv markaziga tegishli o'quvchilar topilmadi",
-        error: 'Not Found',
-      },
-    },
-  })
-  findLearningCenterStudents(
-    @Param('learningCenterId') learningCenterId: string,
-  ) {
-    return this.studentsService.findLearningCenterStudents(+learningCenterId);
-  }
-
   @Get()
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
