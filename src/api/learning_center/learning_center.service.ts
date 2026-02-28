@@ -32,9 +32,6 @@ export class LearningCenterService {
       .orderBy('student.id', 'ASC')
       .getMany();
 
-    if (!students.length) {
-      throw new NotFoundException("O'quvchilar topilmadi");
-    }
 
     return {
       statusCode: 200,
@@ -51,10 +48,6 @@ export class LearningCenterService {
       })
       .orderBy('teacher.id', 'ASC')
       .getMany();
-
-    if (!teachers.length) {
-      throw new NotFoundException("O'qituvchilar topilmadi");
-    }
 
     return {
       statusCode: 200,
