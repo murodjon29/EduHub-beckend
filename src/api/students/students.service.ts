@@ -135,7 +135,6 @@ export class StudentsService {
     }
   }
 
-  
   async findAll() {
     const students = await this.studentRepository.find({
       relations: [

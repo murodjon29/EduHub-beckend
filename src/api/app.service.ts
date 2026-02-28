@@ -22,8 +22,8 @@ export default class Application {
     // ================= CORS (FAqat BITTA JOYDA) =================
     app.enableCors({
       origin: [
-        'http://localhost:5173',      // local frontend
-        'https://app.novdaunion.uz',  // production frontend
+        'http://localhost:5173', // local frontend
+        'https://app.novdaunion.uz', // production frontend
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

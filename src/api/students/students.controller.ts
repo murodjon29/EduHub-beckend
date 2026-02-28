@@ -31,7 +31,7 @@ import { AdminRoles, Role } from '../../common/enum';
 @ApiTags('students')
 @Controller('students')
 @UseGuards(JwtGuard, RolesGuard)
-@ApiBearerAuth("Authorization")
+@ApiBearerAuth('Authorization')
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
@@ -114,7 +114,7 @@ export class StudentsController {
     return this.studentsService.create(createStudentDto);
   }
 
-   @UseGuards(JwtGuard, RolesGuard)
+  @UseGuards(JwtGuard, RolesGuard)
   @Post('add-to-group')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
   @ApiOperation({
@@ -276,8 +276,6 @@ export class StudentsController {
     return this.studentsService.findOne(+id);
   }
 
-
- 
   @UseGuards(JwtGuard, RolesGuard)
   @Delete('remove-from-group')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)

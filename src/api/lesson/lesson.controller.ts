@@ -18,7 +18,7 @@ import { CreateLessonDto } from './dto/create-lesson.dto';
 import { Lesson } from '../../core/entities/lesson.entity';
 
 @ApiTags('Lessons')
-@ApiBearerAuth("Authorization")
+@ApiBearerAuth('Authorization')
 @Controller('lessons')
 export class LessonController {
   constructor(private readonly lessonService: LessonService) {}
@@ -57,9 +57,7 @@ export class LessonController {
     status: 404,
     description: 'Lesson not found',
   })
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<Lesson> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Lesson> {
     return this.lessonService.findOne(id);
   }
 

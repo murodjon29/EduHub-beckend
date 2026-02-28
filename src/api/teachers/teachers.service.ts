@@ -195,7 +195,6 @@ export class TeachersService {
     };
   }
 
-  
   // Barcha o'qituvchilarni olish
   async findAll() {
     const teachers = await this.teacherRepository.find();

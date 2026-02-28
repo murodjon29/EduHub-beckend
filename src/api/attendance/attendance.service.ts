@@ -48,8 +48,7 @@ export class AttendanceService {
       if (!teacher) throw new NotFoundException('Teacher topilmadi');
     }
 
-    const attendanceDate =
-      date ?? new Date().toISOString().split('T')[0];
+    const attendanceDate = date ?? new Date().toISOString().split('T')[0];
 
     const existing = await this.attendanceRepo.findOne({
       where: {

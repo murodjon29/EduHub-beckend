@@ -13,7 +13,7 @@ export class Student extends BaseModel {
   @Column({ type: 'varchar', length: 20 })
   phone: string;
 
-  @Column({ type: 'varchar', length: 20})
+  @Column({ type: 'varchar', length: 20 })
   parentPhone: string;
 
   @Column({ type: 'date' })

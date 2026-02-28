@@ -9,7 +9,7 @@ import {
   Param,
   UseGuards,
   Patch,
-  Put
+  Put,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -151,7 +151,7 @@ export class AuthController {
     description:
       'Refresh tokenni bekor qilib, foydalanuvchini tizimdan chiqaradi',
   })
-  @ApiBearerAuth("Authorization") // Token talab qilinadi
+  @ApiBearerAuth('Authorization') // Token talab qilinadi
   @ApiResponse({
     status: 200,
     description: 'Muvaffaqiyatli chiqish',
@@ -216,7 +216,7 @@ export class AuthController {
       },
     },
   })
-  @ApiBearerAuth("Authorization") // Token talab qilinadi
+  @ApiBearerAuth('Authorization') // Token talab qilinadi
   @UseGuards(JwtGuard)
   refreshToken(
     @Body('refresh_token') refresh_token: string,
@@ -283,7 +283,7 @@ export class AuthController {
 
   // Foydalanuvchi ma'lumotlarini yangilash
   @Patch('update/:id')
-  @ApiBearerAuth("Authorization")
+  @ApiBearerAuth('Authorization')
   @UseGuards(JwtGuard, SelfGuard)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')

@@ -22,7 +22,7 @@ export class AuthService {
     private readonly fileService: FileService,
     private readonly jwtService: JwtService,
     private readonly bcrypt: BcryptManage,
-  ) { }
+  ) {}
 
   // Ro'yxatdan o'tish
   async register(registerDto: RegisterDto, file?: Express.Multer.File | any) {
@@ -221,14 +221,15 @@ export class AuthService {
 
     // PASSWORD
     if (updateAuthDto.password) {
-      learningCenter.password =
-        await this.bcrypt.createBcryptPassword(updateAuthDto.password);
+      learningCenter.password = await this.bcrypt.createBcryptPassword(
+        updateAuthDto.password,
+      );
     }
 
     // QOLGAN FIELDLAR
     Object.assign(learningCenter, updateAuthDto);
 
-    await this.learningCenterRepository.save(learningCenter);    
+    await this.learningCenterRepository.save(learningCenter);
     return {
       status_code: 200,
       message: 'User data updated successfully',

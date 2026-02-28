@@ -72,8 +72,7 @@ export class AttendanceController {
     schema: {
       example: {
         statusCode: 400,
-        message:
-          'Bu student uchun shu sanada davomat allaqachon mavjud',
+        message: 'Bu student uchun shu sanada davomat allaqachon mavjud',
         error: 'Bad Request',
       },
     },

@@ -1,7 +1,6 @@
 import { IsEnum, IsInt, IsOptional, IsDateString } from 'class-validator';
 import { AttendanceStatus } from '../../../common/enum';
 
-
 export class CreateAttendanceDto {
   @IsInt()
   groupId: number;

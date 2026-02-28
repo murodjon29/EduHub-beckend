@@ -70,7 +70,7 @@ class ApiResponseDto<T> {
 }
 
 @ApiTags('groups')
-@ApiBearerAuth("Authorization")
+@ApiBearerAuth('Authorization')
 @Controller('groups')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}

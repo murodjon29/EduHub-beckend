@@ -7,7 +7,6 @@ import {
   HttpStatus,
   UseGuards,
   Get,
-  Query,
 } from '@nestjs/common';
 import { LearningCenterService } from './learning_center.service';
 import {
@@ -17,8 +16,6 @@ import {
   ApiResponse,
   ApiNotFoundResponse,
   ApiBearerAuth,
-  ApiBody,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { SelfGuard } from '../../common/guard/self.guard';
@@ -27,27 +24,34 @@ import { AdminRoles, Role } from '../../common/enum';
 import { Roles } from '../../common/decorator/roles.decorator';
 
 @ApiTags('Learning Center')
+@ApiBearerAuth('Authorization')
 @Controller('learning-centers')
 export class LearningCenterController {
-  constructor(
-    private readonly learningCenterService: LearningCenterService,
-  ) {}
+  constructor(private readonly learningCenterService: LearningCenterService) {}
+
+  // ============================
+  // GET STUDENTS BY CENTER
+  // ============================
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Get(':learningCenterId/students')
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @Get(':learningCenterId/students')
   @ApiOperation({
     summary: "O'quv markaziga tegishli o'quvchilarni olish",
-    description:
-      "Berilgan o'quv markazi ID si bo'yicha barcha o'quvchilarni qaytaradi",
+  })
+  @ApiParam({
+    name: 'learningCenterId',
+    required: true,
+    example: 1,
+    description: "O'quv markazi ID",
   })
   @ApiResponse({
     status: 200,
-    description: "O'quv markaziga tegishli o'quvchilar",
+    description: "O'quvchilar ro'yxati",
     schema: {
       example: {
         statusCode: 200,
-        message: "O'quv markaziga tegishli o'quvchilar muvaffaqiyatli topildi",
+        message: "O'quvchilar muvaffaqiyatli topildi",
         data: [
           {
             id: 1,
@@ -55,20 +59,17 @@ export class LearningCenterController {
             phone: '+998901234567',
             parentPhone: '+998901234568',
             birthDate: '2010-05-15',
-            address: 'Toshkent, Chilonzor tumani',
             isActive: true,
-            learningCenter: {
-              id: 1,
-              name: 'EduHub Learning Center',
-            },
+            address: 'Toshkent',
+            learningCenterId: 1,
             groupStudents: [
               {
                 id: 1,
+                status: 'ACTIVE',
                 group: {
-                  id: 1,
-                  name: 'Ingliz tili Beginner 2024',
+                  id: 3,
+                  name: 'Frontend Bootcamp',
                 },
-                status: 'active',
               },
             ],
           },
@@ -76,103 +77,93 @@ export class LearningCenterController {
       },
     },
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: "O'quvchilar topilmadi",
     schema: {
       example: {
         statusCode: 404,
-        message: "O'quv markaziga tegishli o'quvchilar topilmadi",
+        message: "O'quvchilar topilmadi",
         error: 'Not Found',
       },
     },
   })
-  findLearningCenterStudents(
-    @Param('learningCenterId') learningCenterId: string,
+  async findLearningCenterStudents(
+    @Param('learningCenterId', ParseIntPipe)
+    learningCenterId: number,
   ) {
-    return this.learningCenterService.findLearningCenterStudents(+learningCenterId);
+    return this.learningCenterService.findLearningCenterStudents(
+      learningCenterId,
+    );
   }
 
+  // ============================
+  // GET TEACHERS BY CENTER
+  // ============================
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @Get(':learningCenterId/teachers')
+  @ApiOperation({
+    summary: "O'quv markaziga tegishli o'qituvchilarni olish",
+  })
   @ApiParam({
-      name: 'learningCenterId',
-      description: "O'quv markazi ID si",
-      required: true,
-      example: 1,
-    })
-    @ApiBody({
-      description: "O'quv markazi ID si",
-      type: Number,
-    })
-    @ApiResponse({
-      status: 200,
-      description: "O'quv markaziga tegishli o'qituvchilar ro'yxati",
-      schema: {
-        example: {
-          statusCode: 200,
-          message:
-            "O'quv markaziga tegishli o'qituvchilar muvaffaqiyatli topildi",
-          data: [
-            {
-              id: 1,
-              login: 'teacher_john',
-              name: 'John',
-              lastName: 'Doe',
-              email: '  john.doe@example.com',
-              phone: '+998901234567',
-              subject: 'Matematika',
-              salary: 5000000,
-              role: 'teacher',
-              learningCenterId: 1,
-              created_at: '2024-01-15T10:30:00.000Z',
-              updated_at: '2024-01-15T10:30:00.000Z',
-            },
-            {
-              id: 2,
-              login: 'teacher_jane',
-              name: 'Jane',
-              lastName: 'Smith',
-              email: '  jane.smith@example.com',
-              phone: '+998901234568',
-              subject: 'Fizika',
-              salary: 5500000,
-              role: 'teacher',
-              learningCenterId: 1,
-              created_at: '2024-01-16T09:20:00.000Z',
-              updated_at: '2024-01-16T09:20:00.000Z',
-            },
-          ],
-        },
+    name: 'learningCenterId',
+    required: true,
+    example: 1,
+    description: "O'quv markazi ID",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "O'qituvchilar ro'yxati",
+    schema: {
+      example: {
+        statusCode: 200,
+        message: "O'qituvchilar muvaffaqiyatli topildi",
+        data: [
+          {
+            id: 1,
+            name: 'John',
+            lastName: 'Doe',
+            phone: '+998901234567',
+            subject: 'Matematika',
+            salary: 5000000,
+            role: 'TEACHER',
+            learningCenterId: 1,
+            isActive: true,
+            createdAt: '2024-01-15T10:30:00.000Z',
+          },
+        ],
       },
-    })
-    @ApiResponse({
-      status: 404,
-      description: "O'quv markazi topilmadi",
-      schema: {
-        example: {
-          statusCode: 404,
-          message: "O'quv markazi topilmadi",
-          error: 'Not Found',
-        },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "O'qituvchilar topilmadi",
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "O'qituvchilar topilmadi",
+        error: 'Not Found',
       },
-    })
-    @UseGuards(JwtGuard, RolesGuard)
-    @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-    @ApiBearerAuth("Authorization")
-    @Get(':learningCenterId/teachers')
-    async findLearningCenterTeachers(
-      @Param('learningCenterId') learningCenterId: string,
-    ) {
-      return this.learningCenterService.getTeachersByLearningCenter(+learningCenterId);
-    }
+    },
+  })
+  async findLearningCenterTeachers(
+    @Param('learningCenterId', ParseIntPipe)
+    learningCenterId: number,
+  ) {
+    return this.learningCenterService.getTeachersByLearningCenter(
+      learningCenterId,
+    );
+  }
+
+  // ============================
+  // DELETE PROFILE IMAGE
+  // ============================
 
   @UseGuards(JwtGuard, SelfGuard)
-  @ApiBearerAuth("Authorization")
   @Delete(':id/profile-image')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Delete learning center profile image',
-    description:
-      'Deletes profile image of the specified learning center and removes file from storage.',
+    summary: 'Learning center profil rasmini o‘chirish',
   })
   @ApiParam({
     name: 'id',
@@ -181,16 +172,16 @@ export class LearningCenterController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Profile image successfully deleted',
+    description: 'Profil rasmi muvaffaqiyatli o‘chirildi',
     schema: {
       example: {
-        message: 'Profile image deleted successfully',
         success: true,
+        message: 'Profile image deleted successfully',
       },
     },
   })
   @ApiNotFoundResponse({
-    description: 'Learning center not found',
+    description: 'Learning center topilmadi',
     schema: {
       example: {
         statusCode: 404,
@@ -199,14 +190,7 @@ export class LearningCenterController {
       },
     },
   })
-  async deleteProfileImage(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    await this.learningCenterService.deleteProfileImage(id);
-
-    return {
-      success: true,
-      message: 'Profile image deleted successfully',
-    };
+  async deleteProfileImage(@Param('id', ParseIntPipe) id: number) {
+    return this.learningCenterService.deleteProfileImage(id);
   }
 }

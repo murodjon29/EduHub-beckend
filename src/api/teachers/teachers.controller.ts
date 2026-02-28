@@ -39,7 +39,7 @@ export class TeachersController {
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiBearerAuth("Authorization")
+  @ApiBearerAuth('Authorization')
   @Post()
   @ApiOperation({
     summary: "Yangi o'qituvchi qo'shish",
@@ -219,7 +219,7 @@ export class TeachersController {
   @Get('search')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiBearerAuth("Authorization")
+  @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: "O'qituvchilarni qidirish",
     description: "Ism, familiya, email, telefon yoki fan bo'yicha qidirish",
@@ -270,7 +270,7 @@ export class TeachersController {
   @Get()
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiBearerAuth("Authorization")
+  @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: "Barcha o'qituvchilarni olish",
     description: "Tizimdagi barcha o'qituvchilar ro'yxati",
@@ -317,11 +317,9 @@ export class TeachersController {
     return this.teachersService.findAll();
   }
 
-  
-
   @Get(':id')
   @UseGuards(JwtGuard, SelfGuard)
-  @ApiBearerAuth("Authorization")
+  @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: "O'qituvchini ID bo'yicha olish",
     description: "Berilgan ID ga mos o'qituvchi ma'lumotlari",
@@ -367,7 +365,7 @@ export class TeachersController {
 
   @Patch(':id')
   @UseGuards(JwtGuard, SelfGuard)
-  @ApiBearerAuth("Authorization")
+  @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: "O'qituvchi ma'lumotlarini yangilash",
     description: "Berilgan ID ga mos o'qituvchi ma'lumotlarini yangilash",
@@ -425,7 +423,7 @@ export class TeachersController {
   @Delete(':id')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN)
-  @ApiBearerAuth("Authorization")
+  @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: "O'qituvchini o'chirish",
     description: "Berilgan ID ga mos o'qituvchini tizimdan o'chirish",
