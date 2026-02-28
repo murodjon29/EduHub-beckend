@@ -26,7 +26,7 @@ export class LearningCenterService {
       .leftJoinAndSelect('student.groupStudents', 'groupStudent')
       .leftJoinAndSelect('groupStudent.group', 'group')
       .leftJoinAndSelect('student.learningCenter', 'learningCenter')
-      .where('student.learningCenterId = :learningCenterId', {
+      .where('student.learningCenter.id = :learningCenterId', {
         learningCenterId,
       })
       .orderBy('student.id', 'ASC')
@@ -43,7 +43,7 @@ export class LearningCenterService {
   async getTeachersByLearningCenter(learningCenterId: number) {
     const teachers = await this.teacherRepository
       .createQueryBuilder('teacher')
-      .where('teacher.learningCenterId = :learningCenterId', {
+      .where('teacher.learningCenter.id = :learningCenterId', {
         learningCenterId,
       })
       .orderBy('teacher.id', 'ASC')
