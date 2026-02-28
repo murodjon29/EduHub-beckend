@@ -47,12 +47,6 @@ export class TeachersService {
         "Bu email manzili bilan o'qituvchi allaqachon mavjud",
       );
     }
-    // Telefon raqami unikal bo'lishi kerak
-    if (await this.teacherRepository.findOne({ where: { phone } })) {
-      throw new ConflictException(
-        "Bu telefon raqami bilan o'qituvchi allaqachon mavjud",
-      );
-    }
     // Login unikal bo'lishi kerak
     if (await this.teacherRepository.findOne({ where: { login } })) {
       throw new ConflictException(

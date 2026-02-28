@@ -15,7 +15,7 @@ export class Teacher extends BaseModel {
   @Column({ type: 'varchar', length: 255 })
   lastName: string;
 
-  @Column({ type: 'varchar', length: 20, unique: true })
+  @Column({ type: 'varchar', length: 20 })
   phone: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
