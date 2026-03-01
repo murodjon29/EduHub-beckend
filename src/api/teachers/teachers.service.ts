@@ -41,12 +41,6 @@ export class TeachersService {
     if (!learningCenter) {
       throw new NotFoundException("O'quv markazi topilmadi");
     }
-    // Email unikal bo'lishi kerak
-    if (await this.teacherRepository.findOne({ where: { email } })) {
-      throw new ConflictException(
-        "Bu email manzili bilan o'qituvchi allaqachon mavjud",
-      );
-    }
     // Login unikal bo'lishi kerak
     if (await this.teacherRepository.findOne({ where: { login } })) {
       throw new ConflictException(
