@@ -28,10 +28,8 @@ export class CreateGroupDto {
   endDate: string;
 
   @ApiProperty({ example: 3, description: 'Haftada necha marta dars' })
-  @IsInt()
-  @Min(1)
-  @Max(7)
-  lessonDays: number;
+  @IsString()
+  lessonDays: string;
 
   @ApiProperty({ example: '15:00', description: 'Dars vaqti' })
   @IsString()
