@@ -100,21 +100,25 @@ export class GroupService {
     if (!group) {
       throw new NotFoundException('Guruh topilmadi');
     }
-    if (
-      !(await this.teacherRepository.findOne({
+    if(updateGroupDto.teacher_id) {
+      const teacher = await this.teacherRepository.findOne({
         where: { id: updateGroupDto.teacher_id },
-      }))
-    ) {
-      throw new NotFoundException("O'qituvchi topilmadi");
+      });
+      if (!teacher) {
+        throw new NotFoundException("O'qituvchi topilmadi");
+      }
+      group.teacher = teacher;
     }
-    if (
-      !(await this.learningCenterRepository.findOne({
+    if(updateGroupDto.learning_center_id) {
+      const learningCenter = await this.learningCenterRepository.findOne({
         where: { id: updateGroupDto.learning_center_id },
-      }))
-    ) {
-      throw new NotFoundException("O'quv markazi topilmadi");
+      });
+      if (!learningCenter) {
+        throw new NotFoundException("O'quv markazi topilmadi");
+      }
+      group.learningCenter = learningCenter;
     }
-    const updatedGroup = this.groupRepository.update(id, {...updateGroupDto});
+    const updatedGroup = this.groupRepository.update(id, {...updateGroupDto, teacher: group.teacher, learningCenter: group.learningCenter });
     return {
       statusCode: 200,
       message: 'Guruh muvaffaqiyatli yangilandi',
