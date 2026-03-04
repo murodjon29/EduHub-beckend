@@ -57,10 +57,12 @@ export class GroupService {
   }
 
   async findByTeacher(teacherId: number) {
-    const groups = await this.groupRepository.find({
-      where: { teacher: { id: teacherId } },
-      relations: ['teacher', 'learningCenter', 'groupStudents'],
-    });
+    const groups = await this.groupRepository.createQueryBuilder('group')
+      .leftJoinAndSelect('group.teacher', 'teacher')
+      .leftJoinAndSelect('group.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('group.groupStudents', 'groupStudents')
+      .where('teacher.id = :teacherId', { teacherId })
+      .getMany();
     return {
       statusCode: 200,
       message: 'Guruhlar muvaffaqiyatli olingan',
@@ -69,10 +71,12 @@ export class GroupService {
   }
 
   async findByLearningCenter(learningCenterId: number) {
-    const groups = await this.groupRepository.find({
-      where: { learningCenter: { id: learningCenterId } },
-      relations: ['teacher', 'learningCenter', 'groupStudents.student'],
-    });
+    const groups = await this.groupRepository.createQueryBuilder('group')
+      .leftJoinAndSelect('group.teacher', 'teacher')
+      .leftJoinAndSelect('group.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('group.groupStudents', 'groupStudents')
+      .where('learningCenter.id = :learningCenterId', { learningCenterId })
+      .getMany();
     return {
       statusCode: 200,
       message: 'Guruhlar muvaffaqiyatli olingan',
@@ -96,35 +100,49 @@ export class GroupService {
   }
 
   async update(id: number, updateGroupDto: UpdateGroupDto) {
-    const group = await this.groupRepository.findOne({ where: { id } });
-    if (!group) {
-      throw new NotFoundException('Guruh topilmadi');
-    }
-    if(updateGroupDto.teacher_id) {
-      const teacher = await this.teacherRepository.findOne({
-        where: { id: updateGroupDto.teacher_id },
-      });
-      if (!teacher) {
-        throw new NotFoundException("O'qituvchi topilmadi");
-      }
-      group.teacher = teacher;
-    }
-    if(updateGroupDto.learning_center_id) {
-      const learningCenter = await this.learningCenterRepository.findOne({
-        where: { id: updateGroupDto.learning_center_id },
-      });
-      if (!learningCenter) {
-        throw new NotFoundException("O'quv markazi topilmadi");
-      }
-      group.learningCenter = learningCenter;
-    }
-    const updatedGroup = this.groupRepository.update(id, {...updateGroupDto, teacher: group.teacher, learningCenter: group.learningCenter });
-    return {
-      statusCode: 200,
-      message: 'Guruh muvaffaqiyatli yangilandi',
-      data: updatedGroup,
-    };
+  const group = await this.groupRepository.findOne({
+    where: { id },
+    relations: ['teacher', 'learningCenter'], // agar kerak bo'lsa
+  });
+
+  if (!group) {
+    throw new NotFoundException('Guruh topilmadi');
   }
+
+  // teacher o'zgartirish
+  if (updateGroupDto.teacher_id) {
+    const teacher = await this.teacherRepository.findOneBy({
+      id: updateGroupDto.teacher_id,
+    });
+    if (!teacher) {
+      throw new NotFoundException("O'qituvchi topilmadi");
+    }
+    group.teacher = teacher;
+  }
+
+  // learning center o'zgartirish
+  if (updateGroupDto.learning_center_id) {
+    const learningCenter = await this.learningCenterRepository.findOneBy({
+      id: updateGroupDto.learning_center_id,
+    });
+    if (!learningCenter) {
+      throw new NotFoundException("O'quv markazi topilmadi");
+    }
+    group.learningCenter = learningCenter;
+  }
+
+  // qolgan oddiy maydonlarni yangilash
+  Object.assign(group, updateGroupDto);
+
+  // eng muhimi — save() chaqirish
+  const updated = await this.groupRepository.save(group);
+
+  return {
+    statusCode: 200,
+    message: 'Guruh muvaffaqiyatli yangilandi',
+    data: updated,
+  };
+}
 
   async remove(id: number) {
     const group = await this.groupRepository.findOne({ where: { id } });

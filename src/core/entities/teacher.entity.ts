@@ -50,9 +50,6 @@ export class Teacher extends BaseModel {
   @JoinColumn({ name: 'learning_center_id' })
   learningCenter: LearningCenter;
 
-  // 🔴 XATO: type 'uuid' emas, 'int' bo'lishi kerak
-  @Column({ type: 'int', nullable: true })
-  learningCenterId: number;
 
   @OneToMany(() => Group, (group) => group.teacher, {
     cascade: true,
