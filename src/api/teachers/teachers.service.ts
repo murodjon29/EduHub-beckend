@@ -226,16 +226,6 @@ export class TeachersService {
     if (!teacher) {
       throw new NotFoundException("O'qituvchi topilmadi");
     }
-    // Agar telefon raqami yangilanayotgan bo'lsa, uning unikal ekanligini tekshirish
-    if (
-      await this.teacherRepository.findOne({
-        where: { phone: updateTeacherDto.phone },
-      })
-    ) {
-      throw new ConflictException(
-        "Bu telefon raqami bilan o'qituvchi allaqachon mavjud",
-      );
-    }
     // Agar login yangilanayotgan bo'lsa, uning unikal ekanligini tekshirish
     if (
       await this.teacherRepository.findOne({
