@@ -132,15 +132,12 @@ export class GroupService {
   }
 
   // qolgan oddiy maydonlarni yangilash
-  Object.assign(group, updateGroupDto);
-
-  // eng muhimi — save() chaqirish
-  const updated = await this.groupRepository.save(group);
+  const updateGroup = this.groupRepository.update({ id }, {...updateGroupDto});
 
   return {
     statusCode: 200,
     message: 'Guruh muvaffaqiyatli yangilandi',
-    data: updated,
+    data: updateGroup,
   };
 }
 
