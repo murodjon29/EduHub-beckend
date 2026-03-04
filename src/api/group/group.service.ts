@@ -114,12 +114,11 @@ export class GroupService {
     ) {
       throw new NotFoundException("O'quv markazi topilmadi");
     }
-    Object.assign(group, updateGroupDto);
-    await this.groupRepository.save(group);
+    const updatedGroup = this.groupRepository.update(id, {...updateGroupDto});
     return {
       statusCode: 200,
       message: 'Guruh muvaffaqiyatli yangilandi',
-      data: group,
+      data: updatedGroup,
     };
   }
 

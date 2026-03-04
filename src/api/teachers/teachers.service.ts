@@ -226,16 +226,6 @@ export class TeachersService {
     if (!teacher) {
       throw new NotFoundException("O'qituvchi topilmadi");
     }
-    // Agar email yangilanayotgan bo'lsa, uning unikal ekanligini tekshirish
-    if (
-      await this.teacherRepository.findOne({
-        where: { email: updateTeacherDto.email },
-      })
-    ) {
-      throw new ConflictException(
-        "Bu email manzili bilan o'qituvchi allaqachon mavjud",
-      );
-    }
     // Agar telefon raqami yangilanayotgan bo'lsa, uning unikal ekanligini tekshirish
     if (
       await this.teacherRepository.findOne({
