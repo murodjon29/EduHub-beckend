@@ -227,10 +227,11 @@ export class TeachersService {
       throw new NotFoundException("O'qituvchi topilmadi");
     }
     // Agar login yangilanayotgan bo'lsa, uning unikal ekanligini tekshirish
-    if ( updateTeacherDto.login &&
-      await this.teacherRepository.findOne({
+    if (
+      updateTeacherDto.login &&
+      (await this.teacherRepository.findOne({
         where: { login: updateTeacherDto.login },
-      })
+      }))
     ) {
       throw new ConflictException(
         "Bu login bilan o'qituvchi allaqachon mavjud",

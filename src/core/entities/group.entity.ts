@@ -22,7 +22,7 @@ export class Group extends BaseModel {
   endDate: string;
 
   // Guruhning dars kunlarini belgilovchi maydon
-  @Column({ type: 'varchar', })
+  @Column({ type: 'varchar' })
   lessonDays: string;
 
   // Dars vaqti uchun maydon

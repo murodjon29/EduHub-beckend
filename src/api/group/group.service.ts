@@ -57,7 +57,8 @@ export class GroupService {
   }
 
   async findByTeacher(teacherId: number) {
-    const groups = await this.groupRepository.createQueryBuilder('group')
+    const groups = await this.groupRepository
+      .createQueryBuilder('group')
       .leftJoinAndSelect('group.teacher', 'teacher')
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
@@ -71,7 +72,8 @@ export class GroupService {
   }
 
   async findByLearningCenter(learningCenterId: number) {
-    const groups = await this.groupRepository.createQueryBuilder('group')
+    const groups = await this.groupRepository
+      .createQueryBuilder('group')
       .leftJoinAndSelect('group.teacher', 'teacher')
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
@@ -100,47 +102,80 @@ export class GroupService {
   }
 
   async update(id: number, updateGroupDto: UpdateGroupDto) {
-  const group = await this.groupRepository.findOne({
-    where: { id },
-    relations: ['teacher', 'learningCenter'], // agar kerak bo'lsa
-  });
-
-  if (!group) {
-    throw new NotFoundException('Guruh topilmadi');
-  }
-
-  // teacher o'zgartirish
-  if (updateGroupDto.teacher_id) {
-    const teacher = await this.teacherRepository.findOneBy({
-      id: updateGroupDto.teacher_id,
+    const group = await this.groupRepository.findOne({
+      where: { id },
+      relations: ['teacher', 'learningCenter'],
     });
-    if (!teacher) {
-      throw new NotFoundException("O'qituvchi topilmadi");
-    }
-    group.teacher = teacher;
-  }
 
-  // learning center o'zgartirish
-  if (updateGroupDto.learning_center_id) {
-    const learningCenter = await this.learningCenterRepository.findOneBy({
-      id: updateGroupDto.learning_center_id,
+    if (!group) {
+      throw new NotFoundException('Guruh topilmadi');
+    }
+
+    // Teacher va LearningCenterni alohida handle qilish
+    const { teacher_id, learning_center_id, ...restDto } = updateGroupDto;
+
+    // Teacher o'zgartirish
+    if (teacher_id) {
+      const teacher = await this.teacherRepository.findOneBy({
+        id: teacher_id,
+      });
+      if (!teacher) {
+        throw new NotFoundException("O'qituvchi topilmadi");
+      }
+      group.teacher = teacher;
+    }
+
+    // Learning center o'zgartirish
+    if (learning_center_id) {
+      const learningCenter = await this.learningCenterRepository.findOneBy({
+        id: learning_center_id,
+      });
+      if (!learningCenter) {
+        throw new NotFoundException("O'quv markazi topilmadi");
+      }
+      group.learningCenter = learningCenter;
+    }
+
+    // Qolgan maydonlarni yangilash
+    const groupFields = [
+      'name',
+      'startDate',
+      'endDate',
+      'lessonDays',
+      'lessonTime',
+      'monthlyPrice',
+      'isActive',
+      'maxStudents',
+      'room',
+      'description',
+      'currentStudents',
+    ];
+
+    for (const field of groupFields) {
+      if (restDto[field] !== undefined) {
+        group[field] = restDto[field];
+      }
+    }
+
+    await this.groupRepository.save(group);
+
+    // Yangilangan ma'lumotni qaytarish
+    const updatedGroup = await this.groupRepository.findOne({
+      where: { id },
+      relations: [
+        'teacher',
+        'learningCenter',
+        'groupStudents',
+        'groupStudents.student',
+      ],
     });
-    if (!learningCenter) {
-      throw new NotFoundException("O'quv markazi topilmadi");
-    }
-    group.learningCenter = learningCenter;
+
+    return {
+      statusCode: 200,
+      message: 'Guruh muvaffaqiyatli yangilandi',
+      data: updatedGroup,
+    };
   }
-
-  // qolgan oddiy maydonlarni yangilash
-  const updateGroup = this.groupRepository.update({ id }, {...updateGroupDto});
-
-  return {
-    statusCode: 200,
-    message: 'Guruh muvaffaqiyatli yangilandi',
-    data: updateGroup,
-  };
-}
-
   async remove(id: number) {
     const group = await this.groupRepository.findOne({ where: { id } });
     if (!group) {

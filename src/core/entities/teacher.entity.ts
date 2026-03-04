@@ -50,7 +50,6 @@ export class Teacher extends BaseModel {
   @JoinColumn({ name: 'learning_center_id' })
   learningCenter: LearningCenter;
 
-
   @OneToMany(() => Group, (group) => group.teacher, {
     cascade: true,
   })

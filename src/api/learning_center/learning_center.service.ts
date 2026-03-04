@@ -32,7 +32,6 @@ export class LearningCenterService {
       .orderBy('student.id', 'ASC')
       .getMany();
 
-
     return {
       statusCode: 200,
       message: "O'quvchilar muvaffaqiyatli topildi",
