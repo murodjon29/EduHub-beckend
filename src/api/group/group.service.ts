@@ -113,7 +113,6 @@ export class GroupService {
 
     const { teacher_id, learning_center_id, ...restDto } = updateGroupDto;
 
-    // Teacher o'zgartirish
     if (teacher_id !== undefined) {
       const teacher = await this.teacherRepository.findOneBy({
         id: teacher_id,
@@ -122,7 +121,6 @@ export class GroupService {
       group.teacher = teacher;
     }
 
-    // Learning center o'zgartirish
     if (learning_center_id !== undefined) {
       const learningCenter = await this.learningCenterRepository.findOneBy({
         id: learning_center_id,
@@ -132,13 +130,22 @@ export class GroupService {
       group.learningCenter = learningCenter;
     }
 
-    // ✅ monthlyPrice string kelsa -> number ga o'zgartirish
-    if (restDto.monthlyPrice !== undefined) {
-      restDto.monthlyPrice = Number(restDto.monthlyPrice);
-    }
-
-    // Qolgan fieldlarni birlashtirish
-    Object.assign(group, restDto);
+    // Faqat kelgan fieldlarni yangilash
+    if (restDto.name !== undefined) group.name = restDto.name;
+    if (restDto.startDate !== undefined) group.startDate = restDto.startDate;
+    if (restDto.endDate !== undefined) group.endDate = restDto.endDate;
+    if (restDto.lessonDays !== undefined) group.lessonDays = restDto.lessonDays;
+    if (restDto.lessonTime !== undefined) group.lessonTime = restDto.lessonTime;
+    if (restDto.monthlyPrice !== undefined)
+      group.monthlyPrice = parseFloat(String(restDto.monthlyPrice));
+    if (restDto.isActive !== undefined) group.isActive = restDto.isActive;
+    if (restDto.maxStudents !== undefined)
+      group.maxStudents = parseInt(String(restDto.maxStudents));
+    if (restDto.room !== undefined) group.room = restDto.room;
+    if (restDto.description !== undefined)
+      group.description = restDto.description;
+    if (restDto.currentStudents !== undefined)
+      group.currentStudents = parseInt(String(restDto.currentStudents));
 
     await this.groupRepository.save(group);
 
@@ -158,7 +165,6 @@ export class GroupService {
       data: updatedGroup,
     };
   }
-
   async remove(id: number) {
     const group = await this.groupRepository.findOne({ where: { id } });
     if (!group) {
