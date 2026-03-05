@@ -16,7 +16,7 @@ export class GroupService {
     private readonly teacherRepository: Repository<Teacher>,
     @InjectRepository(LearningCenter)
     private readonly learningCenterRepository: Repository<LearningCenter>,
-  ) { }
+  ) {}
 
   async create(createGroupDto: CreateGroupDto) {
     const { teacher_id, learning_center_id } = createGroupDto;
@@ -114,39 +114,32 @@ export class GroupService {
     const { teacher_id, learning_center_id, ...restDto } = updateGroupDto;
 
     // Teacher o'zgartirish
-    if (teacher_id) {
-      const teacher = await this.teacherRepository.findOneBy({ id: teacher_id });
-      if (!teacher) {
-        throw new NotFoundException("O'qituvchi topilmadi");
-      }
+    if (teacher_id !== undefined) {
+      const teacher = await this.teacherRepository.findOneBy({
+        id: teacher_id,
+      });
+      if (!teacher) throw new NotFoundException("O'qituvchi topilmadi");
       group.teacher = teacher;
     }
 
     // Learning center o'zgartirish
-    if (learning_center_id) {
+    if (learning_center_id !== undefined) {
       const learningCenter = await this.learningCenterRepository.findOneBy({
         id: learning_center_id,
       });
-      if (!learningCenter) {
+      if (!learningCenter)
         throw new NotFoundException("O'quv markazi topilmadi");
-      }
       group.learningCenter = learningCenter;
     }
 
-    // Qolgan maydonlarni yangilash
-    const groupFields = [
-      'name', 'startDate', 'endDate', 'lessonDays', 'lessonTime',
-      'monthlyPrice', 'isActive', 'maxStudents', 'room',
-      'description', 'currentStudents',
-    ];
-
-    for (const field of groupFields) {
-      if (restDto[field] !== undefined) {
-        group[field] = restDto[field];
-      }
+    // ✅ monthlyPrice string kelsa -> number ga o'zgartirish
+    if (restDto.monthlyPrice !== undefined) {
+      restDto.monthlyPrice = Number(restDto.monthlyPrice);
     }
 
-    // ✅ update() o'rniga save() ishlatish - relations ham saqlanadi
+    // Qolgan fieldlarni birlashtirish
+    Object.assign(group, restDto);
+
     await this.groupRepository.save(group);
 
     const updatedGroup = await this.groupRepository.findOne({
@@ -165,7 +158,7 @@ export class GroupService {
       data: updatedGroup,
     };
   }
-  
+
   async remove(id: number) {
     const group = await this.groupRepository.findOne({ where: { id } });
     if (!group) {
