@@ -156,8 +156,7 @@ export class GroupService {
         group[field] = restDto[field];
       }
     }
-
-    await this.groupRepository.save(group);
+    await this.groupRepository.update(id, group);
 
     // Yangilangan ma'lumotni qaytarish
     const updatedGroup = await this.groupRepository.findOne({
