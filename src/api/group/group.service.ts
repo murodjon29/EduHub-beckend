@@ -16,7 +16,7 @@ export class GroupService {
     private readonly teacherRepository: Repository<Teacher>,
     @InjectRepository(LearningCenter)
     private readonly learningCenterRepository: Repository<LearningCenter>,
-  ) {}
+  ) { }
 
   async create(createGroupDto: CreateGroupDto) {
     const { teacher_id, learning_center_id } = createGroupDto;
@@ -111,14 +111,11 @@ export class GroupService {
       throw new NotFoundException('Guruh topilmadi');
     }
 
-    // Teacher va LearningCenterni alohida handle qilish
     const { teacher_id, learning_center_id, ...restDto } = updateGroupDto;
 
     // Teacher o'zgartirish
     if (teacher_id) {
-      const teacher = await this.teacherRepository.findOneBy({
-        id: teacher_id,
-      });
+      const teacher = await this.teacherRepository.findOneBy({ id: teacher_id });
       if (!teacher) {
         throw new NotFoundException("O'qituvchi topilmadi");
       }
@@ -138,17 +135,9 @@ export class GroupService {
 
     // Qolgan maydonlarni yangilash
     const groupFields = [
-      'name',
-      'startDate',
-      'endDate',
-      'lessonDays',
-      'lessonTime',
-      'monthlyPrice',
-      'isActive',
-      'maxStudents',
-      'room',
-      'description',
-      'currentStudents',
+      'name', 'startDate', 'endDate', 'lessonDays', 'lessonTime',
+      'monthlyPrice', 'isActive', 'maxStudents', 'room',
+      'description', 'currentStudents',
     ];
 
     for (const field of groupFields) {
@@ -156,9 +145,10 @@ export class GroupService {
         group[field] = restDto[field];
       }
     }
-    await this.groupRepository.update(id, group);
 
-    // Yangilangan ma'lumotni qaytarish
+    // ✅ update() o'rniga save() ishlatish - relations ham saqlanadi
+    await this.groupRepository.save(group);
+
     const updatedGroup = await this.groupRepository.findOne({
       where: { id },
       relations: [
@@ -175,6 +165,7 @@ export class GroupService {
       data: updatedGroup,
     };
   }
+  
   async remove(id: number) {
     const group = await this.groupRepository.findOne({ where: { id } });
     if (!group) {
