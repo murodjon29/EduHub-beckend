@@ -30,7 +30,7 @@ export class Group extends BaseModel {
   lessonTime: string;
 
   // Guruhning oylik to'lov miqdori uchun maydon
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   monthlyPrice: number;
 
   // Guruhning faol yoki faol emasligini belgilovchi maydon
