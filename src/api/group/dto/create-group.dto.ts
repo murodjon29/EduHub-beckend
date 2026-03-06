@@ -33,8 +33,7 @@ export class CreateGroupDto {
 
   @ApiProperty({ example: 500000 })
   @Transform(({ value }) => parseFloat(value))
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
+  @IsNumber()
   monthlyPrice: number;
 
   @ApiProperty({ example: true, required: false })

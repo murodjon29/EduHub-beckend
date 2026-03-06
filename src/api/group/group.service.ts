@@ -149,6 +149,8 @@ export class GroupService {
 
     await this.groupRepository.save(group);
 
+    await this.groupRepository.save(group);
+
     const updatedGroup = await this.groupRepository.findOne({
       where: { id },
       relations: [
