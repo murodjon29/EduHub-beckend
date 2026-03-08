@@ -1,9 +1,22 @@
 import { Module } from '@nestjs/common';
-import { StudentPaymentsService } from './student-payments.service';
-import { StudentPaymentsController } from './student-payments.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { StudentPayment } from '../../core/entities/student-payment.entity';
+import { Student } from '../../core/entities/student.entity';
+import { Group } from '../../core/entities/group.entity';
+import { StudentPaymentController } from './student-payments.controller';
+import { StudentPaymentService } from './student-payments.service';
 
 @Module({
-  controllers: [StudentPaymentsController],
-  providers: [StudentPaymentsService],
+  imports: [
+    TypeOrmModule.forFeature([
+      StudentPayment,
+      Student,
+      Group,
+    ]),
+  ],
+  controllers: [StudentPaymentController],
+  providers: [StudentPaymentService],
+  exports: [StudentPaymentService],
 })
-export class StudentPaymentsModule {}
+export class StudentPaymentModule {}

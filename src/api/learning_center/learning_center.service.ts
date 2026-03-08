@@ -77,4 +77,44 @@ export class LearningCenterService {
       };
     }
   }
+
+  async statistics(learningCenterId: number) {
+
+    const studentPayments = await this.studentRepository
+      .createQueryBuilder('student')
+      .leftJoinAndSelect('student.groupStudents', 'groupStudent')
+      .leftJoinAndSelect('groupStudent.group', 'group')
+      .leftJoinAndSelect('student.learningCenter', 'learningCenter')
+      .where('student.learningCenter.id = :learningCenterId', {
+        learningCenterId,
+      })
+      .getMany();
+
+    const studentCount = await this.studentRepository.count({
+      where: { learningCenter: { id: learningCenterId } },
+    });
+    const teacherCount = await this.teacherRepository.count({
+      where: { learningCenter: { id: learningCenterId } },
+    });
+
+    const totalPayments = studentPayments.reduce((total, student) => {
+      const payments = student.groupStudents.reduce((groupTotal, groupStudent) => {
+        const groupPayments = groupStudent.group.payments.reduce(
+          (paymentTotal, payment) => paymentTotal + payment.amount,
+          0,
+        );
+        return groupTotal + groupPayments;
+      }, 0);
+      return total + payments;
+    }, 0);
+    return {
+      statusCode: 200,
+      message: 'Statistika muvaffaqiyatli olindi',
+      data: {
+        studentCount,
+        teacherCount,
+        totalPayments,
+      },
+    };
+  }
 }
