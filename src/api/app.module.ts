@@ -19,7 +19,7 @@ import { TeacherSalariesModule } from './teacher_salaries/teacher_salaries.modul
 import { GroupModule } from './group/group.module';
 import { GroupStudentsModule } from './group_students/group_students.module';
 import { StudentsModule } from './students/students.module';
-import { StudentPaymentsModule } from './student-payments/student-payments.module';
+import { StudentPaymentModule } from './student-payments/student-payments.module';
 import { AttendanceModule } from './attendance/attendance.module';
 
 // ---------- Entities ----------
@@ -124,7 +124,7 @@ import { Lesson } from '../core/entities/lesson.entity';
     GroupModule,
     GroupStudentsModule,
     StudentsModule,
-    StudentPaymentsModule,
+    StudentPaymentModule,
     AttendanceModule,
     LessonModule,
   ],
