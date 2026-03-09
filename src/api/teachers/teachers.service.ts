@@ -90,22 +90,22 @@ export class TeachersService {
       login: teacher.login,
       role: teacher.role,
     };
-    const accessToken = await this.jwt.signAsync(payload, {
+    const access_token = await this.jwt.signAsync(payload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '7d',
     });
-    const refreshToken = await this.jwt.signAsync(payload, {
+    const refresh_token = await this.jwt.signAsync(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: '30d',
     });
     // Refresh tokenni cookie ga yozish
-    await this.writeToCookie(refreshToken, res);
+    await this.writeToCookie(refresh_token, res);
     return {
       statusCode: 200,
       message: 'Tizimga muvaffaqiyatli kirdingiz',
       data: {
-        accessToken,
-        refreshToken,
+        access_token,
+        refresh_token,
         teacher,
       },
     };

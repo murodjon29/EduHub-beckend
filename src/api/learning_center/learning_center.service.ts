@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { FileService } from '../file/file.service';
 import { Student } from '../../core/entities/student.entity';
 import { Teacher } from '../../core/entities/teacher.entity';
+import { StudentPayment } from '../../core/entities/student-payment.entity';
 
 @Injectable()
 export class LearningCenterService {
@@ -15,6 +16,8 @@ export class LearningCenterService {
     private readonly learningCenterRepository: Repository<LearningCenter>,
     private readonly fileService: FileService,
     @InjectRepository(Student)
+    private readonly studentPaymentsRepository: Repository<StudentPayment>,
+      @InjectRepository(Student)
     private readonly studentRepository: Repository<Student>,
     @InjectRepository(Teacher)
     private readonly teacherRepository: Repository<Teacher>,
@@ -79,42 +82,33 @@ export class LearningCenterService {
   }
 
   async statistics(learningCenterId: number) {
+  const studentCount = await this.studentRepository.count({
+    where: { learningCenter: { id: learningCenterId } },
+  });
 
-    const studentPayments = await this.studentRepository
-      .createQueryBuilder('student')
-      .leftJoinAndSelect('student.groupStudents', 'groupStudent')
-      .leftJoinAndSelect('groupStudent.group', 'group')
-      .leftJoinAndSelect('student.learningCenter', 'learningCenter')
-      .where('student.learningCenter.id = :learningCenterId', {
-        learningCenterId,
-      })
-      .getMany();
+  const teacherCount = await this.teacherRepository.count({
+    where: { learningCenter: { id: learningCenterId } },
+  });
 
-    const studentCount = await this.studentRepository.count({
-      where: { learningCenter: { id: learningCenterId } },
-    });
-    const teacherCount = await this.teacherRepository.count({
-      where: { learningCenter: { id: learningCenterId } },
-    });
+  // StudentPayment orqali to'g'ridan-to'g'ri totalPayments hisoblash
+  const totalPaymentsResult = await this.studentPaymentsRepository
+    .createQueryBuilder('payment')
+    .leftJoin('payment.student', 'student')
+    .leftJoin('student.learningCenter', 'learningCenter')
+    .where('learningCenter.id = :learningCenterId', { learningCenterId })
+    .select('SUM(payment.paidAmount)', 'total')
+    .getRawOne();
 
-    const totalPayments = studentPayments.reduce((total, student) => {
-      const payments = student.groupStudents.reduce((groupTotal, groupStudent) => {
-        const groupPayments = groupStudent.group.payments.reduce(
-          (paymentTotal, payment) => paymentTotal + payment.amount,
-          0,
-        );
-        return groupTotal + groupPayments;
-      }, 0);
-      return total + payments;
-    }, 0);
-    return {
-      statusCode: 200,
-      message: 'Statistika muvaffaqiyatli olindi',
-      data: {
-        studentCount,
-        teacherCount,
-        totalPayments,
-      },
-    };
-  }
+  const totalPayments = parseFloat(totalPaymentsResult?.total ?? '0');
+
+  return {
+    statusCode: 200,
+    message: 'Statistika muvaffaqiyatli olindi',
+    data: {
+      studentCount,
+      teacherCount,
+      totalPayments,
+    },
+  };
+}
 }
