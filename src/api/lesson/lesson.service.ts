@@ -56,7 +56,7 @@ export class LessonService {
     });
   }
 
-  async findOne(id: number): Promise<Lesson> {
+  async findOne(id: number) {
     const lesson = await this.lessonRepo.findOne({
       where: { id },
       relations: ['group', 'teacher'],
@@ -66,12 +66,53 @@ export class LessonService {
       throw new NotFoundException('Lesson not found');
     }
 
-    return lesson;
+    return {
+      statusCode: 200,
+      message: 'Lesson found successfully',
+      data: lesson,
+    };
   }
 
-  async remove(id: number): Promise<{ message: string }> {
+  async update(id: number, dto: CreateLessonDto) {
     const lesson = await this.findOne(id);
-    await this.lessonRepo.remove(lesson);
-    return { message: 'Lesson deleted successfully' };
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+    const group = await this.groupRepo.findOne({
+      where: { id: dto.groupId },
+    });
+
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+
+    const teacher = await this.teacherRepo.findOne({
+      where: { id: dto.teacherId },
+    });
+
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found');
+    }
+    const updatedLesson = await this.lessonRepo.update(
+      { id },
+      { ...dto, group, teacher },
+    );
+    return {
+      status_Code: 200,
+      message: 'Lesson updated successfully',
+      data: updatedLesson,
+    };
+  }
+
+  async remove(id: number) {
+    const lesson = await this.findOne(id);
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    await this.lessonRepo.delete({ id });
+    return { statusCode: 200, message: 'Lesson deleted successfully' };
   }
 }
