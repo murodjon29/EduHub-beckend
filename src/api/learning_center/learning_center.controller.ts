@@ -27,6 +27,7 @@ import { SelfGuard } from '../../common/guard/self.guard';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { AdminRoles, Role } from '../../common/enum';
 import { Roles } from '../../common/decorator/roles.decorator';
+import { de } from 'date-fns/locale';
 
 @ApiTags('Learning Center')
 @ApiBearerAuth('Authorization')
@@ -88,10 +89,33 @@ export class LearningCenterController {
                 id: 1,
                 name: 'Mathematics V01',
                 time: '09:00 – 12:00',
-                groupName: 'Group A',
+                description: 'Matematika darsi',
+                discount: 0,
+                month: '2026-03-02',
+                group: {
+                  id: 1,
+                  name: 'Backend N1',
+                },
+                teacher: {
+                  id: 1,
+                  firstName: 'Ali',
+                  lastName: 'Valiyev',
+                },
+
               },
             ],
-            payments: [],
+            payments: [
+              {
+                id: 1,
+                amount: 500000,
+                paidAmount: 500000,
+                month: '2026-03-01',
+                student: {
+                  id: 1,
+                  fullName: 'Ali Valiyev',
+                },
+              },
+            ],
             birthdays: [
               {
                 id: 12,
