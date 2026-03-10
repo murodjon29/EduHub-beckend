@@ -34,6 +34,23 @@ import { Roles } from '../../common/decorator/roles.decorator';
 export class LearningCenterController {
   constructor(private readonly learningCenterService: LearningCenterService) {}
 
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @Get('/:id/lessons')
+  @ApiOperation({ summary: 'Learning center bo‘yicha barcha darslarni olish' })
+  @ApiParam({
+    name: 'id',
+    example: 1,
+    description: 'Learning center ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lessons list',
+  })
+  async findLessonsByLearningCenter(@Param('id') id: number) {
+    return this.learningCenterService.findLessonsByLearningCenter(id);
+  }
+
   // learning_center.controller.ts ga qo'shish
 
   @UseGuards(JwtGuard, RolesGuard)

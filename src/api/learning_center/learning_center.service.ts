@@ -126,7 +126,7 @@ export class LearningCenterService {
       .leftJoin('lesson.group', 'group')
       .leftJoin('group.learningCenter', 'lc')
       .where('lc.id = :learningCenterId', { learningCenterId })
-      .andWhere('lesson.lessonDate BETWEEN :startDate AND :endDate', {
+      .andWhere('"lesson"."lessonDate" BETWEEN :startDate AND :endDate', {
         startDate,
         endDate,
       })
@@ -233,6 +233,34 @@ export class LearningCenterService {
       statusCode: 200,
       message: "Kalendar ma'lumotlari muvaffaqiyatli olindi",
       data: calendarData,
+    };
+  }
+
+  async findLessonsByLearningCenter(learningCenterId: number) {
+    const lessons = await this.lessonRepository
+      .createQueryBuilder('lesson')
+      .leftJoin('lesson.group', 'group')
+      .leftJoin('group.learningCenter', 'lc')
+      .leftJoin('lesson.teacher', 'teacher')
+      .where('lc.id = :learningCenterId', { learningCenterId })
+      .select([
+        'lesson.id',
+        'lesson.name',
+        'lesson.lessonDate',
+        'lesson.startTime',
+        'lesson.endTime',
+        'group.id',
+        'group.name',
+        'teacher.id',
+        'teacher.firstName',
+        'teacher.lastName',
+      ])
+      .getMany();
+
+    return {
+      success: true,
+      message: 'Lessons retrieved successfully',
+      data: lessons,
     };
   }
 }
