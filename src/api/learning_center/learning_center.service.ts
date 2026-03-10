@@ -130,10 +130,10 @@ export class LearningCenterService {
       },
       lessonDate: Between(startDate, endDate),
     },
-    relations: {
-      group: true,
-      teacher: true,
-    },
+    relations: [
+      'group',
+      'teacher'
+    ],
   });
 
   // 2️⃣ Payments
@@ -146,9 +146,9 @@ export class LearningCenterService {
       },
       paymentDate: Between(startDate, endDate),
     },
-    relations: {
-      student: true,
-    },
+    relations: [
+      'student',
+  ],
   });
 
   // 3️⃣ Birthdays
