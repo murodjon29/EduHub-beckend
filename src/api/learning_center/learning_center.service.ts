@@ -120,7 +120,7 @@ export class LearningCenterService {
     const lastDay = new Date(year, month, 0).getDate();
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    // 1. Darslar - Lesson entity orqali (lessonDate field bor)
+    // 1. Darslar - name o'rniga group.name ishlatamiz
     const lessons = await this.lessonRepository
       .createQueryBuilder('lesson')
       .leftJoin('lesson.group', 'group')
@@ -132,7 +132,6 @@ export class LearningCenterService {
       })
       .select([
         'lesson.id',
-        // 'lesson.name',
         'lesson.lessonDate',
         'lesson.startTime',
         'lesson.endTime',
@@ -141,7 +140,7 @@ export class LearningCenterService {
       ])
       .getMany();
 
-    // 2. To'lovlar - paymentDate bo'yicha
+    // 2. To'lovlar
     const payments = await this.studentPaymentsRepository
       .createQueryBuilder('payment')
       .leftJoin('payment.student', 'student')
@@ -160,10 +159,10 @@ export class LearningCenterService {
       ])
       .getMany();
 
-    // 3. Tug'ilgan kunlar - shu oyda tug'ilgan studentlar
+    // 3. Tug'ilgan kunlar
     const birthdays = await this.studentRepository
       .createQueryBuilder('student')
-      .where('student.learningCenter.id = :learningCenterId', {
+      .where('student.learningCenterId = :learningCenterId', {
         learningCenterId,
       })
       .andWhere('EXTRACT(MONTH FROM student.birthDate) = :month', { month })
@@ -194,7 +193,7 @@ export class LearningCenterService {
         .filter((l) => l.lessonDate === dateStr)
         .map((l) => ({
           id: l.id,
-          name: l.name,
+          name: l.group?.name, // group.name ishlatamiz
           time: `${l.startTime} – ${l.endTime}`,
           groupName: l.group?.name,
         }));
@@ -208,18 +207,24 @@ export class LearningCenterService {
           month: p.month,
         }));
 
-      const dayBirthdays = birthdays.filter((student) => {
-        const bd = student.birthDate; // "1995-03-15" format
-        const bdDay = parseInt(bd.split('-')[2]);
-        return bdDay === day;
-      });
+      const dayBirthdays = birthdays
+        .filter((student) => {
+          const bdDay = parseInt(student.birthDate.split('-')[2]);
+          return bdDay === day;
+        })
+        .map((student) => ({
+          id: student.id,
+          fullName: student.fullName,
+          phone: student.phone,
+          birthDate: student.birthDate,
+        }));
 
       if (dayLessons.length || dayPayments.length || dayBirthdays.length) {
         calendarData[dateStr] = {
           date: dateStr,
           lessons: dayLessons,
           payments: dayPayments,
-          birthdays: dayBirthdays, // student obyekti to'liq
+          birthdays: dayBirthdays,
         };
       }
     }
