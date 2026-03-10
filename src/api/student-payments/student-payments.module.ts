@@ -8,13 +8,7 @@ import { StudentPaymentController } from './student-payments.controller';
 import { StudentPaymentService } from './student-payments.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      StudentPayment,
-      Student,
-      Group,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([StudentPayment, Student, Group])],
   controllers: [StudentPaymentController],
   providers: [StudentPaymentService],
   exports: [StudentPaymentService],

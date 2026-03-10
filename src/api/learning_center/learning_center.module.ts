@@ -11,7 +11,13 @@ import { StudentPayment } from '../../core/entities/student-payment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([LearningCenter, Student, Teacher, StudentPayment, Lesson]),
+    TypeOrmModule.forFeature([
+      LearningCenter,
+      Student,
+      Teacher,
+      StudentPayment,
+      Lesson,
+    ]),
     FileModule,
   ],
   controllers: [LearningCenterController],

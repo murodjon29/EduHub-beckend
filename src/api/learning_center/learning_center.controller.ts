@@ -34,66 +34,71 @@ import { Roles } from '../../common/decorator/roles.decorator';
 export class LearningCenterController {
   constructor(private readonly learningCenterService: LearningCenterService) {}
 
-
   // learning_center.controller.ts ga qo'shish
 
-@UseGuards(JwtGuard, RolesGuard)
-@Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-@Get(':learningCenterId/calendar')
-@ApiOperation({
-  summary: "O'quv markazi kalendar ma'lumotlari",
-})
-@ApiParam({
-  name: 'learningCenterId',
-  example: 1,
-})
-@ApiQuery({
-  name: 'year',
-  example: 2026,
-  description: 'Yil',
-})
-@ApiQuery({
-  name: 'month',
-  example: 3,
-  description: 'Oy (1-12)',
-})
-@ApiResponse({
-  status: 200,
-  description: "Kalendar ma'lumotlari muvaffaqiyatli olindi",
-  schema: {
-    example: {
-      statusCode: 200,
-      message: "Kalendar ma'lumotlari muvaffaqiyatli olindi",
-      data: {
-        '2026-03-02': {
-          date: '2026-03-02',
-          lessons: [{ id: 1, name: 'Mathematics V01', time: '09:00 – 12:00', groupName: 'Group A' }],
-          payments: [],
-          birthdays: [
-            {
-              id: 12,
-              fullName: 'Kamola Yusupova',
-              phone: '+998901234567',
-              birthDate: '2000-03-02',
-            },
-          ],
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @Get(':learningCenterId/calendar')
+  @ApiOperation({
+    summary: "O'quv markazi kalendar ma'lumotlari",
+  })
+  @ApiParam({
+    name: 'learningCenterId',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'year',
+    example: 2026,
+    description: 'Yil',
+  })
+  @ApiQuery({
+    name: 'month',
+    example: 3,
+    description: 'Oy (1-12)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Kalendar ma'lumotlari muvaffaqiyatli olindi",
+    schema: {
+      example: {
+        statusCode: 200,
+        message: "Kalendar ma'lumotlari muvaffaqiyatli olindi",
+        data: {
+          '2026-03-02': {
+            date: '2026-03-02',
+            lessons: [
+              {
+                id: 1,
+                name: 'Mathematics V01',
+                time: '09:00 – 12:00',
+                groupName: 'Group A',
+              },
+            ],
+            payments: [],
+            birthdays: [
+              {
+                id: 12,
+                fullName: 'Kamola Yusupova',
+                phone: '+998901234567',
+                birthDate: '2000-03-02',
+              },
+            ],
+          },
         },
       },
     },
-  },
-})
-async getCalendarData(
-  @Param('learningCenterId', ParseIntPipe) learningCenterId: number,
-  @Query('year', ParseIntPipe) year: number,
-  @Query('month', ParseIntPipe) month: number,
-) {
-  return this.learningCenterService.getCalendarData(
-    learningCenterId,
-    year,
-    month,
-  );
-}
-
+  })
+  async getCalendarData(
+    @Param('learningCenterId', ParseIntPipe) learningCenterId: number,
+    @Query('year', ParseIntPipe) year: number,
+    @Query('month', ParseIntPipe) month: number,
+  ) {
+    return this.learningCenterService.getCalendarData(
+      learningCenterId,
+      year,
+      month,
+    );
+  }
 
   // =================================
   // GET STUDENTS BY LEARNING CENTER
@@ -162,8 +167,6 @@ async getCalendarData(
       learningCenterId,
     );
   }
-
-  
 
   // =================================
   // GET LEARNING CENTER STATISTICS
