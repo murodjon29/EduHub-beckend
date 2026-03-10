@@ -3,7 +3,7 @@ import { CreateLearningCenterDto } from './dto/create-learning_center.dto';
 import { UpdateLearningCenterDto } from './dto/update-learning_center.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LearningCenter } from '../../core/entities/learning_center.entity';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { FileService } from '../file/file.service';
 import { Student } from '../../core/entities/student.entity';
 import { Teacher } from '../../core/entities/teacher.entity';
@@ -116,125 +116,113 @@ export class LearningCenterService {
     };
   }
   async getCalendarData(learningCenterId: number, year: number, month: number) {
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const lastDay = new Date(year, month, 0).getDate();
-    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+  const lastDay = new Date(year, month, 0).getDate();
+  const endDate = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
 
-    // 1. Darslar - name o'rniga group.name ishlatamiz
-    const lessons = await this.lessonRepository
-      .createQueryBuilder('lesson')
-      .leftJoin('lesson.group', 'group')
-      .leftJoin('group.learningCenter', 'lc')
-      .where('lc.id = :learningCenterId', { learningCenterId })
-      .andWhere('"lesson"."lessonDate" BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      })
-      .select([
-        'lesson.id',
-        'lesson.lessonDate',
-        'lesson.startTime',
-        'lesson.endTime',
-        'group.id',
-        'group.name',
-      ])
-      .getMany();
+  // 1️⃣ Lessons (hamma fieldlari bilan)
+  const lessons = await this.lessonRepository.find({
+    where: {
+      group: {
+        learningCenter: {
+          id: learningCenterId,
+        },
+      },
+      lessonDate: Between(startDate, endDate),
+    },
+    relations: {
+      group: true,
+      teacher: true,
+    },
+  });
 
-    // 2. To'lovlar
-    const payments = await this.studentPaymentsRepository
-      .createQueryBuilder('payment')
-      .leftJoin('payment.student', 'student')
-      .leftJoin('student.learningCenter', 'lc')
-      .where('lc.id = :learningCenterId', { learningCenterId })
-      .andWhere('payment.paymentDate BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      })
-      .select([
-        'payment.id',
-        'payment.paidAmount',
-        'payment.amount',
-        'payment.paymentDate',
-        'payment.month',
-      ])
-      .getMany();
+  // 2️⃣ Payments
+  const payments = await this.studentPaymentsRepository.find({
+    where: {
+      student: {
+        learningCenter: {
+          id: learningCenterId,
+        },
+      },
+      paymentDate: Between(startDate, endDate),
+    },
+    relations: {
+      student: true,
+    },
+  });
 
-    // 3. Tug'ilgan kunlar
-    const birthdays = await this.studentRepository
-      .createQueryBuilder('student')
-      .where('student.learningCenterId = :learningCenterId', {
-        learningCenterId,
-      })
-      .andWhere('EXTRACT(MONTH FROM student.birthDate) = :month', { month })
-      .andWhere('student.isActive = true')
-      .select([
-        'student.id',
-        'student.fullName',
-        'student.phone',
-        'student.birthDate',
-      ])
-      .getMany();
+  // 3️⃣ Birthdays
+  const birthdays = await this.studentRepository
+    .createQueryBuilder('student')
+    .where('student.learningCenterId = :learningCenterId', {
+      learningCenterId,
+    })
+    .andWhere('EXTRACT(MONTH FROM student.birthDate) = :month', { month })
+    .andWhere('student.isActive = true')
+    .getMany();
 
-    // Kunlar bo'yicha guruhlash
-    const calendarData: Record<
-      string,
-      {
-        date: string;
-        lessons: any[];
-        payments: any[];
-        birthdays: any[];
-      }
-    > = {};
-
-    for (let day = 1; day <= lastDay; day++) {
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-      const dayLessons = lessons
-        .filter((l) => l.lessonDate === dateStr)
-        .map((l) => ({
-          id: l.id,
-          name: l.group?.name, // group.name ishlatamiz
-          time: `${l.startTime} – ${l.endTime}`,
-          groupName: l.group?.name,
-        }));
-
-      const dayPayments = payments
-        .filter((p) => p.paymentDate === dateStr)
-        .map((p) => ({
-          id: p.id,
-          amount: p.amount,
-          paidAmount: p.paidAmount,
-          month: p.month,
-        }));
-
-      const dayBirthdays = birthdays
-        .filter((student) => {
-          const bdDay = parseInt(student.birthDate.split('-')[2]);
-          return bdDay === day;
-        })
-        .map((student) => ({
-          id: student.id,
-          fullName: student.fullName,
-          phone: student.phone,
-          birthDate: student.birthDate,
-        }));
-
-      if (dayLessons.length || dayPayments.length || dayBirthdays.length) {
-        calendarData[dateStr] = {
-          date: dateStr,
-          lessons: dayLessons,
-          payments: dayPayments,
-          birthdays: dayBirthdays,
-        };
-      }
+  const calendarData: Record<
+    string,
+    {
+      date: string
+      lessons: any[]
+      payments: any[]
+      birthdays: any[]
     }
+  > = {};
 
-    return {
-      statusCode: 200,
-      message: "Kalendar ma'lumotlari muvaffaqiyatli olindi",
-      data: calendarData,
-    };
+  for (let day = 1; day <= lastDay; day++) {
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    const dayLessons = lessons
+      .filter((l) => l.lessonDate === dateStr)
+      .map((l) => ({
+        id: l.id,
+        name: l.group?.name,
+        lessonName: l.name,
+        time: `${l.startTime} - ${l.endTime}`,
+        group: l.group,
+        teacher: l.teacher,
+      }));
+
+    const dayPayments = payments
+      .filter((p) => p.paymentDate === dateStr)
+      .map((p) => ({
+        id: p.id,
+        amount: p.amount,
+        paidAmount: p.paidAmount,
+        month: p.month,
+        student: p.student,
+      }));
+
+    const dayBirthdays = birthdays
+      .filter((student) => {
+        const bdDay = parseInt(student.birthDate.split('-')[2]);
+        return bdDay === day;
+      })
+      .map((student) => ({
+        id: student.id,
+        fullName: student.fullName,
+        phone: student.phone,
+        birthDate: student.birthDate,
+      }));
+
+    if (dayLessons.length || dayPayments.length || dayBirthdays.length) {
+      calendarData[dateStr] = {
+        date: dateStr,
+        lessons: dayLessons,
+        payments: dayPayments,
+        birthdays: dayBirthdays,
+      };
+    }
   }
+
+  return {
+    statusCode: 200,
+    message: "Kalendar ma'lumotlari muvaffaqiyatli olindi",
+    data: calendarData,
+  };
+}
 
   async findLessonsByLearningCenter(learningCenterId: number) {
     const lessons = await this.lessonRepository
