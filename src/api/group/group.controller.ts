@@ -285,7 +285,7 @@ export class GroupController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.LEARNING_CENTER)
+  @Roles(Role.TEACHER)
   @Get('teacher/:teacherId')
   @ApiOperation({
     summary: "O'qituvchi bo'yicha guruhlarni olish",
