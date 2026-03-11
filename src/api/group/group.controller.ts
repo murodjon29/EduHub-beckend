@@ -479,7 +479,7 @@ export class GroupController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
+  @Roles(Role.LEARNING_CENTER)
   @Patch(':id')
   @ApiOperation({
     summary: 'Guruhni yangilash',
