@@ -335,7 +335,7 @@ export class GroupController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
+  @Roles(Role.LEARNING_CENTER)
   @Get('learning-center/:centerId')
   @ApiOperation({
     summary: "O'quv markazi bo'yicha guruhlarni olish",
@@ -387,7 +387,7 @@ export class GroupController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
+  @Roles(Role.TEACHER)
   @Get(':id')
   @ApiOperation({
     summary: 'Bitta guruhni olish',
