@@ -31,6 +31,7 @@ import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
 import { AdminRoles, Role } from '../../common/enum';
+import { LearningCenterGuard } from '../../common/guard/learning-center.guard';
 
 // Response DTO'lar
 class GroupResponseDto {
@@ -284,7 +285,7 @@ export class GroupController {
     return this.groupService.findAll();
   }
 
-  @UseGuards(JwtGuard, RolesGuard)
+  @UseGuards(JwtGuard, RolesGuard, LearningCenterGuard)
   @Roles(Role.TEACHER)
   @Get('teacher/:teacherId')
   @ApiOperation({
@@ -334,7 +335,7 @@ export class GroupController {
     return this.groupService.findByTeacher(teacherId);
   }
 
-  @UseGuards(JwtGuard, RolesGuard)
+  @UseGuards(JwtGuard, RolesGuard, LearningCenterGuard)
   @Roles(Role.LEARNING_CENTER)
   @Get('learning-center/:centerId')
   @ApiOperation({
@@ -386,7 +387,7 @@ export class GroupController {
     return this.groupService.findByLearningCenter(centerId);
   }
 
-  @UseGuards(JwtGuard, RolesGuard)
+  @UseGuards(JwtGuard, RolesGuard, LearningCenterGuard)
   @Roles(Role.TEACHER)
   @Get(':id')
   @ApiOperation({
@@ -570,8 +571,8 @@ export class GroupController {
   ) {
     return this.groupService.update(id, updateGroupDto);
   }
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN, Role.LEARNING_CENTER)
+  @UseGuards(JwtGuard, RolesGuard, LearningCenterGuard)
+  @Roles(AdminRoles.ADMIN)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
