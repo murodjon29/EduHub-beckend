@@ -61,6 +61,7 @@ export class GroupService {
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.teacher', 'teacher')
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('group.groupStudents.student', 'groupStudents.student')
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
       .where('teacher.id = :teacherId', { teacherId })
       .getMany();
