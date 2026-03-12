@@ -235,7 +235,9 @@ export class GroupController {
       },
     },
   })
-  async findByLearningCenter( @Param('learningCenterId', ParseIntPipe) learningCenterId: number) {
+  async findByLearningCenter(
+    @Param('learningCenterId', ParseIntPipe) learningCenterId: number,
+  ) {
     return this.groupService.findByLearningCenter(learningCenterId);
   }
 
@@ -247,7 +249,7 @@ export class GroupController {
     name: 'groupId',
     example: 1,
   })
-  @ApiOkResponse({ 
+  @ApiOkResponse({
     description: 'Guruh muvaffaqiyatli olingan',
     schema: {
       example: {

@@ -62,34 +62,37 @@ export class GroupService {
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.teacher', 'teacher')
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
-      .leftJoinAndSelect('group.groupStudents.student', 'groupStudents.student')
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
+      .leftJoinAndSelect('groupStudents.student', 'student')
       .where('teacher.id = :teacherId', { teacherId })
       .getMany();
+
+    return {
+      statusCode: 200,
+      message: 'Guruhlar muvaffaqiyatli olindan',
+      data: groups,
+    };
+  }
+
+  async findByLearningCenter(learningCenterId: number) {
+    const groups = await this.groupRepository
+      .createQueryBuilder('groups')
+      .leftJoinAndSelect('groups.teacher', 'teacher')
+      .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('groups.groupStudents', 'groupStudents')
+      .leftJoinAndSelect('groupStudents.student', 'student') // ← bu qator yetishmayotgan edi
+      .where('learningCenter.id = :learningCenterId', { learningCenterId })
+      .andWhere('groupStudents.status = :status', {
+        status: GroupStudentStatus.ACTIVE,
+      }) // ixtiyoriy
+      .getMany();
+
     return {
       statusCode: 200,
       message: 'Guruhlar muvaffaqiyatli olingan',
       data: groups,
     };
   }
-
-  async findByLearningCenter(learningCenterId: number) {
-  const groups = await this.groupRepository
-    .createQueryBuilder('groups')
-    .leftJoinAndSelect('groups.teacher', 'teacher')
-    .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
-    .leftJoinAndSelect('groups.groupStudents', 'groupStudents')
-    .leftJoinAndSelect('groupStudents.student', 'student') // ← bu qator yetishmayotgan edi
-    .where('learningCenter.id = :learningCenterId', { learningCenterId })
-    .andWhere('groupStudents.status = :status', { status: GroupStudentStatus.ACTIVE }) // ixtiyoriy
-    .getMany();
-
-  return {
-    statusCode: 200,
-    message: 'Guruhlar muvaffaqiyatli olingan',
-    data: groups,
-  };
-}
 
   async findOne(id: number) {
     const group = await this.groupRepository.findOne({
