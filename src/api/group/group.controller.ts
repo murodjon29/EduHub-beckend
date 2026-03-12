@@ -200,7 +200,7 @@ export class GroupController {
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER)
-  @Get('teacher/group/:groupId')
+  @Get('teacher/:groupId')
   @ApiOperation({ summary: 'Teacher o‘z guruhini olish' })
   @ApiParam({
     name: 'groupId',
