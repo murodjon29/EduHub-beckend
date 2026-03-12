@@ -136,7 +136,7 @@ export class GroupController {
   // TEACHER GROUPS
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER)
-  @Get('my-groups')
+  @Get('teacher/my-groups')
   @ApiOperation({ summary: "Teacher o'z guruhlarini oladi" })
   @ApiOkResponse({
     description: 'Teacher guruhlari',
@@ -206,7 +206,7 @@ export class GroupController {
     name: 'groupId',
     example: 1,
   })
-  @ApiOkResponse({
+  @ApiOkResponse({ 
     description: 'Guruh muvaffaqiyatli olingan',
     schema: {
       example: {
