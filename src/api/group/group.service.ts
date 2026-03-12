@@ -73,10 +73,10 @@ export class GroupService {
 
   async findByLearningCenter(learningCenterId: number) {
     const groups = await this.groupRepository
-      .createQueryBuilder('group')
-      .leftJoinAndSelect('group.teacher', 'teacher')
-      .leftJoinAndSelect('group.learningCenter', 'learningCenter')
-      .leftJoinAndSelect('group.groupStudents', 'groupStudents')
+      .createQueryBuilder('groups')
+      .leftJoinAndSelect('groups.teacher', 'teacher')
+      .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('groups.groupStudents', 'groupStudents')
       .where('learningCenter.id = :learningCenterId', { learningCenterId })
       .getMany();
     return {
