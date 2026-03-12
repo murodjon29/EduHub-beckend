@@ -27,7 +27,6 @@ import { SelfGuard } from '../../common/guard/self.guard';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { AdminRoles, Role } from '../../common/enum';
 import { Roles } from '../../common/decorator/roles.decorator';
-import { de } from 'date-fns/locale';
 
 @ApiTags('Learning Center')
 @ApiBearerAuth('Authorization')
@@ -141,6 +140,42 @@ export class LearningCenterController {
     );
   }
 
+
+  @Get(':learningCenterId/payments')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @ApiOperation({
+    summary: "O'quv markaziga tegishli to'lovlarni olish",
+  })
+  @ApiParam({
+    name: 'learningCenterId',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "To'lovlar muvaffaqiyatli olindi",
+    schema: {
+      example: {
+        statusCode: 200,
+        message: "To'lovlar muvaffaqiyatli olindi",
+        data: [
+          {
+            id: 1,
+            amount: 500000,
+            paidAmount: 500000,
+            month: '2026-03-01',
+            student: {
+              id: 1,
+              fullName: 'Ali Valiyev',
+            },
+          },  
+        ],
+      },
+    },
+  })  
+  async getPaymentsByLearningCenter(@Param('learningCenterId', ParseIntPipe) learningCenterId: number) {
+    return this.learningCenterService.getPaymentsByLearningCenter(learningCenterId);
+  } 
   // =================================
   // GET STUDENTS BY LEARNING CENTER
   // =================================

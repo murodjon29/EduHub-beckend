@@ -250,4 +250,27 @@ export class LearningCenterService {
       data: lessons,
     };
   }
+
+  async getPaymentsByLearningCenter(learningCenterId: number) {
+    const payments = await this.studentPaymentsRepository
+      .createQueryBuilder('student_payments')
+      .leftJoin('student_payments.student', 'student')
+      .leftJoin('student.learningCenter', 'lc')
+      .where('lc.id = :learningCenterId', { learningCenterId })
+      .select([
+        'student_payments.id',
+        'student_payments.amount',
+        'student_payments.paidAmount',
+        'student_payments.paymentDate',
+        'student.id',
+        'student.fullName',
+      ])
+      .getMany();
+
+    return {
+      success: true,
+      message: 'Payments retrieved successfully',
+      data: payments,
+    };
+  }
 }
