@@ -101,6 +101,28 @@ export class GroupService {
     };
   }
 
+  async findOneByTeacher(teacherId: number, groupId: number) {
+    const group = await this.groupRepository
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.teacher', 'teacher')
+      .leftJoinAndSelect('group.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('group.groupStudents', 'groupStudents')
+      .leftJoinAndSelect('groupStudents.student', 'student')
+      .where('teacher.id = :teacherId', { teacherId })
+      .andWhere('group.id = :groupId', { groupId })
+      .getOne();
+
+    if (!group) {
+      throw new NotFoundException('Guruh topilmadi');
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Guruh muvaffaqiyatli olingan',
+      data: group,
+    };
+  }
+
   async update(id: number, updateGroupDto: UpdateGroupDto) {
     const group = await this.groupRepository.findOne({
       where: { id },

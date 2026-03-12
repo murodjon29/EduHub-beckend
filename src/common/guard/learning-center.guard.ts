@@ -10,17 +10,27 @@ import { AdminRoles, Role } from '../enum';
 export class LearningCenterGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
+
+    const user = req.user;
+
+    if (!user) {
+      throw new ForbiddenException('User not found');
+    }
+
+    // adminlar va learning center kiradi
     if (
-      req.user?.role ||
-      req.user?.role === AdminRoles.SUPERADMIN ||
-      req.user?.role === AdminRoles.ADMIN ||
-      req.user?.role === Role.LEARNING_CENTER
+      user.role === AdminRoles.SUPERADMIN ||
+      user.role === AdminRoles.ADMIN ||
+      user.role === Role.LEARNING_CENTER
     ) {
       return true;
     }
-    if (req.params.id !== req.user.id) {
-      throw new ForbiddenException('Forbidden user');
+
+    // o‘z id sini tekshirish
+    if (req.params.id && Number(req.params.id) === user.id) {
+      return true;
     }
-    return true;
+
+    throw new ForbiddenException('Forbidden user');
   }
 }

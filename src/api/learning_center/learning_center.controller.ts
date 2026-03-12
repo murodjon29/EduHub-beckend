@@ -100,7 +100,6 @@ export class LearningCenterController {
                   firstName: 'Ali',
                   lastName: 'Valiyev',
                 },
-
               },
             ],
             payments: [
@@ -140,7 +139,6 @@ export class LearningCenterController {
     );
   }
 
-
   @Get(':learningCenterId/payments')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
@@ -168,14 +166,18 @@ export class LearningCenterController {
               id: 1,
               fullName: 'Ali Valiyev',
             },
-          },  
+          },
         ],
       },
     },
-  })  
-  async getPaymentsByLearningCenter(@Param('learningCenterId', ParseIntPipe) learningCenterId: number) {
-    return this.learningCenterService.getPaymentsByLearningCenter(learningCenterId);
-  } 
+  })
+  async getPaymentsByLearningCenter(
+    @Param('learningCenterId', ParseIntPipe) learningCenterId: number,
+  ) {
+    return this.learningCenterService.getPaymentsByLearningCenter(
+      learningCenterId,
+    );
+  }
   // =================================
   // GET STUDENTS BY LEARNING CENTER
   // =================================
