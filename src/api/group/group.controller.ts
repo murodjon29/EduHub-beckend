@@ -198,6 +198,47 @@ export class GroupController {
     return this.groupService.findOne(id);
   }
 
+  // LEARNING CENTER O'Z GURUHINI OLADI
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @Get('learning-center/:learningCenterId')
+  @ApiParam({
+    name: 'learningCenterId',
+    example: 1,
+  })
+  @ApiOperation({ summary: "O'quv markazi o'z guruhlarini oladi" })
+  @ApiOkResponse({
+    description: 'Learning center groups',
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'Groups fetched successfully',
+        data: [
+          {
+            id: 1,
+            name: 'IELTS 7.0',
+            lessonDays: 3,
+            lessonTime: '15:00',
+            monthlyPrice: 500000,
+            currentStudents: 10,
+            teacher: {
+              id: 1,
+              firstName: 'Ali',
+              lastName: 'Karimov',
+            },
+            learningCenter: {
+              id: 1,
+              name: 'Najot Talim',
+            },
+          },
+        ],
+      },
+    },
+  })
+  async findByLearningCenter(learningCenterId: number) {
+    return this.groupService.findByLearningCenter(learningCenterId);
+  }
+
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER)
   @Get('teacher/:groupId')
