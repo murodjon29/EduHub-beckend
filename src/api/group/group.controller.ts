@@ -235,7 +235,7 @@ export class GroupController {
       },
     },
   })
-  async findByLearningCenter(learningCenterId: number) {
+  async findByLearningCenter( @Param('learningCenterId', ParseIntPipe) learningCenterId: number) {
     return this.groupService.findByLearningCenter(learningCenterId);
   }
 
