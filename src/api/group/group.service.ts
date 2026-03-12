@@ -6,6 +6,7 @@ import { Group } from '../../core/entities/group.entity';
 import { Repository } from 'typeorm';
 import { Teacher } from '../../core/entities/teacher.entity';
 import { LearningCenter } from '../../core/entities/learning_center.entity';
+import { GroupStudentStatus } from '../../common/enum';
 
 @Injectable()
 export class GroupService {
@@ -73,19 +74,22 @@ export class GroupService {
   }
 
   async findByLearningCenter(learningCenterId: number) {
-    const groups = await this.groupRepository
-      .createQueryBuilder('groups')
-      .leftJoinAndSelect('groups.teacher', 'teacher')
-      .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
-      .leftJoinAndSelect('groups.groupStudents', 'groupStudents')
-      .where('learningCenter.id = :learningCenterId', { learningCenterId })
-      .getMany();
-    return {
-      statusCode: 200,
-      message: 'Guruhlar muvaffaqiyatli olingan',
-      data: groups,
-    };
-  }
+  const groups = await this.groupRepository
+    .createQueryBuilder('groups')
+    .leftJoinAndSelect('groups.teacher', 'teacher')
+    .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
+    .leftJoinAndSelect('groups.groupStudents', 'groupStudents')
+    .leftJoinAndSelect('groupStudents.student', 'student') // ← bu qator yetishmayotgan edi
+    .where('learningCenter.id = :learningCenterId', { learningCenterId })
+    .andWhere('groupStudents.status = :status', { status: GroupStudentStatus.ACTIVE }) // ixtiyoriy
+    .getMany();
+
+  return {
+    statusCode: 200,
+    message: 'Guruhlar muvaffaqiyatli olingan',
+    data: groups,
+  };
+}
 
   async findOne(id: number) {
     const group = await this.groupRepository.findOne({
