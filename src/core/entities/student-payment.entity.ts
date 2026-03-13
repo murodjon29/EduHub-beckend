@@ -37,4 +37,7 @@ export class StudentPayment extends BaseModel {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string; // To'lov haqida qo'shimcha izoh
+
+  @Column({ type: 'int', nullable: true })
+  learningCenterId: number; // O'quv markazi IDsi (guruh orqali olinadi)
 }

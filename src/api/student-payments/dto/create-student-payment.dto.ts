@@ -14,7 +14,6 @@ export class CreateStudentPaymentDto {
   group_id: number;
 
   @IsNumber()
-  @Min(0)
   amount: number;
 
   @IsDateString()
@@ -22,15 +21,17 @@ export class CreateStudentPaymentDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
   paidAmount?: number;
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
   discount?: number;
 
   @IsOptional()
   @IsString()
   description?: string;
+
+
+  @IsNumber()
+  learningCenterId: number; // O'quv markazi IDsi (guruh orqali olinadi)
 }
