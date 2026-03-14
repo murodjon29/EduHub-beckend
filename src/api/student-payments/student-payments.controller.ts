@@ -78,6 +78,7 @@ export class StudentPaymentController {
     return this.paymentService.create(dto);
   }
 
+  @UseGuards(JwtGuard, SelfGuard)
   @Get('learning-center/:learningCenterId')
   @ApiOperation({ summary: 'Student tolovlarini olish (filter bilan)' })
   @ApiQuery({ name: 'student_id', required: false, example: 1 })
@@ -112,7 +113,7 @@ export class StudentPaymentController {
   ) {
     return this.paymentService.findAll(learningCenterId, filterDto);
   }
-  // @UseGuards(JwtGuard, SelfGuard)
+  @UseGuards(JwtGuard, SelfGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Bitta tolovni olish' })
   @ApiParam({ name: 'id', example: 1 })
