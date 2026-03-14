@@ -75,10 +75,7 @@ export class StudentPaymentService {
       .createQueryBuilder('payment')
       .leftJoinAndSelect('payment.student', 'student')
       .leftJoinAndSelect('payment.group', 'group')
-      .where('student.learningCenterId = :learningCenterId', {
-        learningCenterId,
-      })
-      .andWhere('group.learningCenterId = :learningCenterId', {
+      .where('payment.learningCenterId = :learningCenterId', {
         learningCenterId,
       });
 
