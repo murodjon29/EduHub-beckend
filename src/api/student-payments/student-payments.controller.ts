@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 import {
@@ -22,6 +23,8 @@ import { CreateStudentPaymentDto } from './dto/create-student-payment.dto';
 import { UpdateStudentPaymentDto } from './dto/update-student-payment.dto';
 import { FilterStudentPaymentDto } from './dto/filter-student-payment.dto';
 import { StudentPaymentService } from './student-payments.service';
+import { JwtGuard } from '../../common/guard/jwt-auth.guard';
+import { SelfGuard } from '../../common/guard/self.guard';
 
 @ApiTags('Student Payments')
 @Controller('student-payments')
@@ -43,6 +46,7 @@ export class StudentPaymentController {
           discount: 0,
           month: '2025-03-01',
           description: 'Mart oyi uchun tolov',
+          learningCenterId: 1,
         },
       },
     },
@@ -74,7 +78,7 @@ export class StudentPaymentController {
     return this.paymentService.create(dto);
   }
 
-  @Get()
+  @Get(':learningCenterId')
   @ApiOperation({ summary: 'Student tolovlarini olish (filter bilan)' })
   @ApiQuery({ name: 'student_id', required: false, example: 1 })
   @ApiQuery({ name: 'group_id', required: false, example: 2 })
@@ -102,10 +106,13 @@ export class StudentPaymentController {
       ],
     },
   })
-  findAll(@Query() filter: FilterStudentPaymentDto) {
-    return this.paymentService.findAll(filter);
+  findAll(
+    @Param('learningCenterId', ParseIntPipe) learningCenterId: number,
+    @Query() filterDto: FilterStudentPaymentDto,
+  ) {
+    return this.paymentService.findAll(learningCenterId, filterDto);
   }
-
+  @UseGuards(JwtGuard, SelfGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Bitta tolovni olish' })
   @ApiParam({ name: 'id', example: 1 })
@@ -133,7 +140,7 @@ export class StudentPaymentController {
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.paymentService.findOne(id);
   }
-
+  @UseGuards(JwtGuard, SelfGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Tolovni yangilash' })
   @ApiParam({ name: 'id', example: 1 })
@@ -169,6 +176,7 @@ export class StudentPaymentController {
     return this.paymentService.update(id, dto);
   }
 
+  @UseGuards(JwtGuard, SelfGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Tolovni ochirish' })
   @ApiParam({ name: 'id', example: 1 })

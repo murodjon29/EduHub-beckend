@@ -70,32 +70,43 @@ export class StudentPaymentService {
 
     return await this.paymentRepo.save(payment);
   }
-
-  async findAll(filter: FilterStudentPaymentDto) {
-    const qb = this.paymentRepo
+  async findAll(learningCenterId: number, filterDto: FilterStudentPaymentDto) {
+    const query = this.paymentRepo
       .createQueryBuilder('payment')
       .leftJoinAndSelect('payment.student', 'student')
-      .leftJoinAndSelect('payment.group', 'group');
+      .leftJoinAndSelect('payment.group', 'group')
+      .where('student.learningCenterId = :learningCenterId', {
+        learningCenterId,
+      })
+      .andWhere('group.learningCenterId = :learningCenterId', {
+        learningCenterId,
+      });
 
-    if (filter.student_id) {
-      qb.andWhere('student.id = :student_id', {
-        student_id: filter.student_id,
+    if (filterDto.student_id) {
+      query.andWhere('student.id = :student_id', {
+        student_id: filterDto.student_id,
       });
     }
 
-    if (filter.group_id) {
-      qb.andWhere('group.id = :group_id', {
-        group_id: filter.group_id,
+    if (filterDto.group_id) {
+      query.andWhere('group.id = :group_id', {
+        group_id: filterDto.group_id,
       });
     }
 
-    if (filter.month) {
-      qb.andWhere('payment.month = :month', {
-        month: filter.month,
+    if (filterDto.month) {
+      query.andWhere('payment.month = :month', {
+        month: filterDto.month,
       });
     }
 
-    return qb.getMany();
+    const payments = await query.getMany();
+
+    return {
+      statusCode: 200,
+      message: 'Tolovlar muvaffaqiyatli olingan',
+      data: payments,
+    };
   }
 
   async findOne(id: number) {

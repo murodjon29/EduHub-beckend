@@ -31,7 +31,6 @@ export class CreateStudentPaymentDto {
   @IsString()
   description?: string;
 
-
   @IsNumber()
   learningCenterId: number; // O'quv markazi IDsi (guruh orqali olinadi)
 }
