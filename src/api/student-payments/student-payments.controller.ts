@@ -78,7 +78,7 @@ export class StudentPaymentController {
     return this.paymentService.create(dto);
   }
 
-  @Get('learningCenter/:learningCenterId')
+  @Get('learning-center/:learningCenterId')
   @ApiOperation({ summary: 'Student tolovlarini olish (filter bilan)' })
   @ApiQuery({ name: 'student_id', required: false, example: 1 })
   @ApiQuery({ name: 'group_id', required: false, example: 2 })
