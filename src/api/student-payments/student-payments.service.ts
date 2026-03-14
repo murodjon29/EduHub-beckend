@@ -75,6 +75,7 @@ export class StudentPaymentService {
       .createQueryBuilder('payment')
       .leftJoinAndSelect('payment.student', 'student')
       .leftJoinAndSelect('payment.group', 'group')
+      .addSelect('payment.discount')
       .where('payment.learningCenterId = :learningCenterId', {
         learningCenterId,
       });
@@ -97,7 +98,7 @@ export class StudentPaymentService {
       });
     }
 
-    const payments = await query.getMany();
+    const payments = await query.orderBy('payment.id', 'DESC').getMany();
 
     return {
       statusCode: 200,
