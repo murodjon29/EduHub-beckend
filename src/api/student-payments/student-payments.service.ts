@@ -66,6 +66,7 @@ export class StudentPaymentService {
       discount: dto.discount || 0,
       description: dto.description,
       month: dto.month,
+      learningCenterId: dto.learningCenterId,
     });
 
     return await this.paymentRepo.save(payment);
@@ -122,18 +123,38 @@ export class StudentPaymentService {
   }
 
   async findOne(id: number) {
-    const payment = await this.paymentRepo.findOne({
-      where: { id },
-      relations: ['student', 'group'],
-    });
+  const payment = await this.paymentRepo
+    .createQueryBuilder('payment')
+    .leftJoin('payment.student', 'student')
+    .leftJoin('payment.group', 'group')
+    .select([
+      'payment.id',
+      'payment.amount',
+      'payment.paymentDate',
+      'payment.month',
+      'payment.paidAmount',
+      'payment.discount',
+      'payment.description',
 
-    if (!payment) {
-      throw new NotFoundException('Tolov topilmadi');
-    }
+      'student.id',
+      'student.fullName',
 
-    return payment;
+      'group.id',
+      'group.name',
+    ])
+    .where('payment.id = :id', { id })
+    .getOne();
+
+  if (!payment) {
+    throw new NotFoundException('Tolov topilmadi');
   }
 
+  return {
+    statusCode: 200,
+    message: 'Tolov muvaffaqiyatli olingan',
+    data: payment,
+  };
+}
   async update(id: number, dto: UpdateStudentPaymentDto) {
     const payment = await this.paymentRepo.findOne({
       where: { id },

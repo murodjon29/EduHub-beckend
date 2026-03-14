@@ -23,9 +23,8 @@ export class CreateStudentPaymentDto {
   @IsNumber()
   paidAmount?: number;
 
-  @IsOptional()
   @IsNumber()
-  discount?: number;
+  discount: number;
 
   @IsOptional()
   @IsString()
