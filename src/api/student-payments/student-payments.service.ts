@@ -73,9 +73,23 @@ export class StudentPaymentService {
   async findAll(learningCenterId: number, filterDto: FilterStudentPaymentDto) {
     const query = this.paymentRepo
       .createQueryBuilder('payment')
-      .leftJoinAndSelect('payment.student', 'student')
-      .leftJoinAndSelect('payment.group', 'group')
-      .addSelect('payment.discount')
+      .leftJoin('payment.student', 'student')
+      .leftJoin('payment.group', 'group')
+      .select([
+        'payment.id',
+        'payment.amount',
+        'payment.paymentDate',
+        'payment.month',
+        'payment.paidAmount',
+        'payment.discount',
+        'payment.description',
+
+        'student.id',
+        'student.fullName',
+
+        'group.id',
+        'group.name',
+      ])
       .where('payment.learningCenterId = :learningCenterId', {
         learningCenterId,
       });
