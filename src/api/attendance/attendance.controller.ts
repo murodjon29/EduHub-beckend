@@ -23,7 +23,7 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
+  @Roles(Role.TEACHER)
   @Post()
   @ApiOperation({ summary: 'Yangi davomat qo‘shish' })
   @ApiBody({
@@ -82,7 +82,66 @@ export class AttendanceController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
+  @Roles(Role.LEARNING_CENTER)
+  @Post('learning-center/create')
+  @ApiOperation({ summary: 'Yangi davomat qo‘shish' })
+  @ApiBody({
+    type: CreateAttendanceDto,
+    examples: {
+      example1: {
+        summary: 'Oddiy create',
+        value: {
+          groupId: 1,
+          studentId: 5,
+          teacherId: 2,
+          date: '2026-02-23',
+          status: 'PRESENT',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Davomat muvaffaqiyatli yaratildi',
+    schema: {
+      example: {
+        id: 10,
+        date: '2026-02-23',
+        status: 'PRESENT',
+        group: {
+          id: 1,
+          name: 'Frontend N12',
+        },
+        student: {
+          id: 5,
+          fullName: 'Ali Valiyev',
+        },
+        teacher: {
+          id: 2,
+          fullName: 'John Doe',
+        },
+        createdAt: '2026-02-23T08:00:00.000Z',
+        updatedAt: '2026-02-23T08:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Duplicate yoki noto‘g‘ri request',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Bu student uchun shu sanada davomat allaqachon mavjud',
+        error: 'Bad Request',
+      },
+    },
+  })
+  LearningCentercreate(@Body() dto: CreateAttendanceDto): Promise<Attendance> {
+    return this.attendanceService.create(dto);
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.TEACHER)
   @Get()
   @ApiOperation({ summary: 'Barcha davomalarni olish' })
   @ApiResponse({
@@ -93,8 +152,21 @@ export class AttendanceController {
     return this.attendanceService.findAll();
   }
 
+
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
+  @Roles(Role.LEARNING_CENTER)
+  @Get('learning-center/findAll')
+  @ApiOperation({ summary: 'Barcha davomalarni olish' })
+  @ApiResponse({
+    status: 200,
+    description: 'Davomatlar ro‘yxati',
+  })
+  LearningCenterfindAll(): Promise<Attendance[]> {
+    return this.attendanceService.findAll();
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.TEACHER)
   @Get(':id')
   @ApiOperation({ summary: 'Bitta davomatni olish' })
   @ApiResponse({
@@ -117,8 +189,78 @@ export class AttendanceController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.TEACHER, Role.LEARNING_CENTER)
-  @Delete(':id')
+  @Roles(Role.LEARNING_CENTER)
+  @Get('learning-center/:id')
+  @ApiOperation({ summary: 'Bitta davomatni olish' })
+  @ApiResponse({
+    status: 200,
+    description: 'Topilgan davomat',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Topilmadi',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Attendance topilmadi',
+        error: 'Not Found',
+      },
+    },
+  })
+  LearningCenterfindOne(@Param('id', ParseIntPipe) id: number): Promise<Attendance> {
+    return this.attendanceService.findOne(id);
+  }
+
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.TEACHER)
+  @Post(':id')
+  @ApiOperation({ summary: 'Davomatni yangilash' })
+  @ApiResponse({
+    status: 200,
+    description: 'Davomat muvaffaqiyatli yangilandi',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Topilmadi',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Attendance topilmadi',
+        error: 'Not Found',
+      },
+    },
+  })
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: CreateAttendanceDto) {
+    return this.attendanceService.update(updateDto, id);
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER)
+  @Post('learning-center/:id')
+  @ApiOperation({ summary: 'Davomatni yangilash' })
+  @ApiResponse({
+    status: 200,
+    description: 'Davomat muvaffaqiyatli yangilandi',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Topilmadi',
+    schema: {
+      example: {
+        statusCode: 404,      
+        message: 'Attendance topilmadi', 
+        error: 'Not Found',
+      },
+    },
+  })
+  async LearningCenterupdate(@Param('id', ParseIntPipe) id: number, @Body() updateDto: CreateAttendanceDto) {
+    return this.attendanceService.update(updateDto, id);
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER)
+  @Delete('learning-center/:id')
   @ApiOperation({ summary: 'Davomatni o‘chirish' })
   @ApiResponse({
     status: 200,
