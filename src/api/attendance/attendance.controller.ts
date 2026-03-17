@@ -77,7 +77,7 @@ export class AttendanceController {
       },
     },
   })
-  create(@Body() dto: CreateAttendanceDto): Promise<Attendance> {
+  create(@Body() dto: CreateAttendanceDto) {
     return this.attendanceService.create(dto);
   }
 
@@ -136,7 +136,7 @@ export class AttendanceController {
       },
     },
   })
-  LearningCentercreate(@Body() dto: CreateAttendanceDto): Promise<Attendance> {
+  LearningCentercreate(@Body() dto: CreateAttendanceDto) {
     return this.attendanceService.create(dto);
   }
 

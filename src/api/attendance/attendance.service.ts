@@ -41,7 +41,7 @@ export class AttendanceService {
     });
     if (!student) throw new NotFoundException('Student topilmadi');
 
-    let teacher: Teacher | null = null;
+    let teacher;
     if (teacherId) {
       teacher = await this.teacherRepo.findOne({
         where: { id: teacherId },
