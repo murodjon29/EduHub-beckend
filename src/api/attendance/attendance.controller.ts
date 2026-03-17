@@ -156,7 +156,7 @@ export class AttendanceController {
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER)
-  @Get('learning-center/findAll')
+  @Get('learning-center/findAll/:id')
   @ApiOperation({ summary: 'Barcha davomalarni olish' })
   @ApiResponse({
     status: 200,
