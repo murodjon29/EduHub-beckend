@@ -7,6 +7,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
@@ -161,8 +162,8 @@ export class AttendanceController {
     status: 200,
     description: 'Davomatlar ro‘yxati',
   })
-  LearningCenterfindAll(): Promise<Attendance[]> {
-    return this.attendanceService.findAll();
+  LearningCenterfindAll(@Param('learningCenterId', ParseIntPipe) learningCenterId: number): Promise<Attendance[]> {
+    return this.attendanceService.learningCenterFindAll(learningCenterId);
   }
 
   @UseGuards(JwtGuard, RolesGuard)
@@ -188,29 +189,32 @@ export class AttendanceController {
     return this.attendanceService.findOne(id);
   }
 
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.LEARNING_CENTER)
-  @Get('learning-center/:id')
-  @ApiOperation({ summary: 'Bitta davomatni olish' })
-  @ApiResponse({
-    status: 200,
-    description: 'Topilgan davomat',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Topilmadi',
-    schema: {
-      example: {
-        statusCode: 404,
-        message: 'Attendance topilmadi',
-        error: 'Not Found',
-      },
+ @UseGuards(JwtGuard, RolesGuard)
+@Roles(Role.LEARNING_CENTER)
+@Get('learning-center/:id')
+@ApiOperation({ summary: 'Bitta davomatni olish' })
+@ApiResponse({
+  status: 200,
+  description: 'Topilgan davomat',
+})
+@ApiResponse({
+  status: 404,
+  description: 'Topilmadi',
+  schema: {
+    example: {
+      statusCode: 404,
+      message: 'Attendance topilmadi',
+      error: 'Not Found',
     },
-  })
-  LearningCenterfindOne(@Param('id', ParseIntPipe) id: number): Promise<Attendance> {
-    return this.attendanceService.findOne(id);
-  }
-
+  },
+})
+LearningCenterfindOne(
+  @Param('id', ParseIntPipe) id: number,
+  @Request() req // JWT orqali user ma’lumotini olamiz
+): Promise<Attendance> {
+  const learningCenterId = req.user.learningCenterId; // token ichidan olingan
+  return this.attendanceService.learningCenterFindOne(id, learningCenterId);
+}
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER)

@@ -77,6 +77,31 @@ export class AttendanceService {
     return this.attendanceRepo.save(attendance);
   }
 
+  async learningCenterFindAll(learningCenterId: number) {
+    return this.attendanceRepo.find({
+      where: {
+        student: { learningCenter: { id: learningCenterId } },
+      },
+      relations: ['group', 'student', 'teacher'],
+      order: { date: 'DESC' },
+    });
+  }
+
+  async learningCenterFindOne(id: number, learningCenterId: number) {
+    const attendance = await this.attendanceRepo.findOne({
+      where: {
+        id,
+        student: { learningCenter: { id: learningCenterId } },
+      },
+      relations: ['group', 'student', 'teacher'],
+    });
+
+    if (!attendance) {
+      throw new NotFoundException('Attendance topilmadi');
+    }
+    return attendance;
+  }
+
   async findAll() {
     return this.attendanceRepo.find({
       relations: ['group', 'student', 'teacher'],
