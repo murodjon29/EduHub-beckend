@@ -31,21 +31,15 @@ export class AttendanceService {
   async create(dto: CreateAttendanceDto) {
     const { groupId, studentId, teacherId, date, status } = dto;
 
-    const group = await this.groupRepo.findOne({
-      where: { id: groupId },
-    });
+    const group = await this.groupRepo.findOne({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Group topilmadi');
 
-    const student = await this.studentRepo.findOne({
-      where: { id: studentId },
-    });
+    const student = await this.studentRepo.findOne({ where: { id: studentId } });
     if (!student) throw new NotFoundException('Student topilmadi');
 
-    let teacher;
+    let teacher: Teacher | null = null;
     if (teacherId) {
-      teacher = await this.teacherRepo.findOne({
-        where: { id: teacherId },
-      });
+      teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
       if (!teacher) throw new NotFoundException('Teacher topilmadi');
     }
 
@@ -74,7 +68,13 @@ export class AttendanceService {
       status,
     });
 
-    return this.attendanceRepo.save(attendance);
+    const saved = await this.attendanceRepo.save(attendance);
+
+    // Return with full relations
+    return this.attendanceRepo.findOne({
+      where: { id: saved.id },
+      relations: ['group', 'student', 'teacher'],
+    });
   }
 
   async learningCenterFindAll(learningCenterId: number) {
@@ -82,7 +82,7 @@ export class AttendanceService {
       where: {
         student: { learningCenter: { id: learningCenterId } },
       },
-      relations: ['group', 'student', 'teacher'],
+      relations: ['group', 'student', 'student.learningCenter', 'teacher'],
       order: { date: 'DESC' },
     });
   }
@@ -93,7 +93,7 @@ export class AttendanceService {
         id,
         student: { learningCenter: { id: learningCenterId } },
       },
-      relations: ['group', 'student', 'teacher'],
+      relations: ['group', 'student', 'student.learningCenter', 'teacher'],
     });
 
     if (!attendance) {
@@ -121,7 +121,7 @@ export class AttendanceService {
     return attendance;
   }
 
-  async update (updateDto: UpdateAttendanceDto, id: number){
+  async update(updateDto: UpdateAttendanceDto, id: number) {
     const attendance = await this.attendanceRepo.findOne({
       where: { id },
       relations: ['group', 'student', 'teacher'],
@@ -134,42 +134,64 @@ export class AttendanceService {
     const { groupId, studentId, teacherId, date, status } = updateDto;
 
     if (groupId) {
-      const group = await this.groupRepo.findOne({
-        where: { id: groupId },
-      });
+      const group = await this.groupRepo.findOne({ where: { id: groupId } });
       if (!group) throw new NotFoundException('Group topilmadi');
       attendance.group = group;
     }
 
     if (studentId) {
-      const student = await this.studentRepo.findOne({
-        where: { id: studentId },
-      });
+      const student = await this.studentRepo.findOne({ where: { id: studentId } });
       if (!student) throw new NotFoundException('Student topilmadi');
       attendance.student = student;
     }
 
     if (teacherId) {
-      const teacher = await this.teacherRepo.findOne({
-        where: { id: teacherId },
-      });
+      const teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
       if (!teacher) throw new NotFoundException('Teacher topilmadi');
       attendance.teacher = teacher;
     }
-    attendance.date = date ?? attendance.date;
+
+    const newDate = date ?? attendance.date;
+    const newStudentId = studentId ?? attendance.student.id;
+    const newGroupId = groupId ?? attendance.group.id;
+
+    // Check duplicate only if date, student, or group changed
+    if (date || studentId || groupId) {
+      const duplicate = await this.attendanceRepo.findOne({
+        where: {
+          group: { id: newGroupId },
+          student: { id: newStudentId },
+          date: newDate,
+        },
+        relations: ['group', 'student'],
+      });
+
+      if (duplicate && duplicate.id !== id) {
+        throw new BadRequestException(
+          'Bu student uchun shu sanada davomat allaqachon mavjud',
+        );
+      }
+    }
+
+    attendance.date = newDate;
     attendance.status = status ?? attendance.status;
 
     await this.attendanceRepo.save(attendance);
- 
+
     return {
       statusCode: 200,
       message: 'Attendance updated successfully',
       data: attendance,
-    }
+    };
   }
 
   async remove(id: number) {
     const attendance = await this.findOne(id);
-    return this.attendanceRepo.remove(attendance);
+    await this.attendanceRepo.remove(attendance);
+
+    return {
+      statusCode: 200,
+      message: 'Attendance muvaffaqiyatli ochirildi',
+    };
   }
 }
