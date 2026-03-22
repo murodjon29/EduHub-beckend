@@ -1,4 +1,34 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateAttendanceDto } from './create-attendance.dto';
+// update-attendance.dto.ts
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  ArrayNotEmpty,
+} from 'class-validator';
+import { AttendanceStatus } from '../../../common/enum';
 
-export class UpdateAttendanceDto extends PartialType(CreateAttendanceDto) {}
+export class UpdateAttendanceDto {
+  @IsOptional()
+  @IsInt()
+  groupId?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  studentIds?: number[];
+
+  @IsOptional()
+  @IsInt()
+  teacherId?: number;
+
+  @IsOptional()
+  @IsDateString()
+  date?: string;
+
+  @IsOptional()
+  @IsEnum(AttendanceStatus)
+  status?: AttendanceStatus;
+}

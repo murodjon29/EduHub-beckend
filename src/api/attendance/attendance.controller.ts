@@ -30,6 +30,8 @@ import { Role } from '../../common/enum';
 
 // ─── Shared Swagger Examples ───────────────────────────────────────────────
 
+// ─── Shared Swagger Examples ───────────────────────────────────────────────
+
 const ATTENDANCE_EXAMPLE = {
   id: 10,
   date: '2026-02-23',
@@ -55,6 +57,42 @@ const ATTENDANCE_LIST_EXAMPLE = [
   },
 ];
 
+// ─── Create response — massiv qaytadi ─────────────────────────────────────
+const CREATE_RESPONSE_EXAMPLE = [
+  {
+    id: 10,
+    date: '2026-02-23',
+    status: 'PRESENT',
+    group: { id: 1, name: 'Frontend N12' },
+    student: { id: 5, fullName: 'Ali Valiyev' },
+    teacher: { id: 2, fullName: 'John Doe' },
+    createdAt: '2026-02-23T08:00:00.000Z',
+    updatedAt: '2026-02-23T08:00:00.000Z',
+  },
+  {
+    id: 11,
+    date: '2026-02-23',
+    status: 'PRESENT',
+    group: { id: 1, name: 'Frontend N12' },
+    student: { id: 6, fullName: 'Vali Karimov' },
+    teacher: { id: 2, fullName: 'John Doe' },
+    createdAt: '2026-02-23T08:00:00.000Z',
+    updatedAt: '2026-02-23T08:00:00.000Z',
+  },
+  {
+    skipped: true,
+    studentId: 7,
+    existing: {
+      id: 9,
+      date: '2026-02-23',
+      status: 'ABSENT',
+      group: { id: 1, name: 'Frontend N12' },
+      student: { id: 7, fullName: 'Sardor Rahimov' },
+      teacher: { id: 2, fullName: 'John Doe' },
+    },
+  },
+];
+
 const NOT_FOUND_EXAMPLE = {
   statusCode: 404,
   message: 'Attendance topilmadi',
@@ -70,7 +108,25 @@ const DUPLICATE_EXAMPLE = {
 const UPDATE_SUCCESS_EXAMPLE = {
   statusCode: 200,
   message: 'Attendance updated successfully',
-  data: ATTENDANCE_EXAMPLE,
+  data: [
+    {
+      id: 10,
+      date: '2026-02-23',
+      status: 'PRESENT',
+      group: { id: 1, name: 'Frontend N12' },
+      student: { id: 5, fullName: 'Ali Valiyev' },
+      teacher: { id: 2, fullName: 'John Doe' },
+    },
+    {
+      skipped: true,
+      studentId: 6,
+      existing: {
+        id: 11,
+        date: '2026-02-23',
+        status: 'ABSENT',
+      },
+    },
+  ],
 };
 
 const DELETE_SUCCESS_EXAMPLE = {
@@ -78,22 +134,33 @@ const DELETE_SUCCESS_EXAMPLE = {
   message: 'Attendance muvaffaqiyatli ochirildi',
 };
 
+// ─── Create body examples — studentIds massiv ──────────────────────────────
 const CREATE_BODY_EXAMPLES = {
-  present: {
-    summary: 'Student kelgan holat',
+  multipleStudents: {
+    summary: 'Bir nechta student — asosiy holat',
     value: {
       groupId: 1,
-      studentId: 5,
+      studentIds: [5, 6, 7],
+      teacherId: 2,
+      date: '2026-02-23',
+      status: 'PRESENT',
+    },
+  },
+  singleStudent: {
+    summary: 'Bitta student',
+    value: {
+      groupId: 1,
+      studentIds: [5],
       teacherId: 2,
       date: '2026-02-23',
       status: 'PRESENT',
     },
   },
   absent: {
-    summary: 'Student kelmagan holat',
+    summary: 'Bir nechta student kelmagan holat',
     value: {
       groupId: 1,
-      studentId: 6,
+      studentIds: [5, 6],
       teacherId: 2,
       date: '2026-02-23',
       status: 'ABSENT',
@@ -103,7 +170,7 @@ const CREATE_BODY_EXAMPLES = {
     summary: "Teacher ko'rsatilmagan holat",
     value: {
       groupId: 1,
-      studentId: 7,
+      studentIds: [5, 6, 7],
       date: '2026-02-23',
       status: 'PRESENT',
     },
@@ -112,7 +179,7 @@ const CREATE_BODY_EXAMPLES = {
     summary: "Date ko'rsatilmasa bugungi sana olinadi",
     value: {
       groupId: 1,
-      studentId: 8,
+      studentIds: [5, 6],
       teacherId: 2,
       status: 'PRESENT',
     },
@@ -128,18 +195,27 @@ const UPDATE_BODY_EXAMPLES = {
     summary: "Faqat sanani o'zgartirish",
     value: { date: '2026-03-01' },
   },
+  updateMultipleStudents: {
+    summary: 'Bir nechta student uchun yangilash',
+    value: {
+      groupId: 1,
+      studentIds: [5, 6, 7],
+      teacherId: 3,
+      date: '2026-03-01',
+      status: 'PRESENT',
+    },
+  },
   updateAll: {
     summary: 'Barcha maydonlarni yangilash',
     value: {
       groupId: 2,
-      studentId: 5,
+      studentIds: [5],
       teacherId: 3,
       date: '2026-03-01',
       status: 'PRESENT',
     },
   },
 };
-
 // ─────────────────────────────────────────────────────────────────────────────
 
 @ApiBearerAuth()

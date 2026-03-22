@@ -1,12 +1,21 @@
-import { IsEnum, IsInt, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  ArrayNotEmpty,
+} from 'class-validator';
 import { AttendanceStatus } from '../../../common/enum';
 
 export class CreateAttendanceDto {
   @IsInt()
   groupId: number;
 
-  @IsInt()
-  studentId: number;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  studentIds: number[];
 
   @IsOptional()
   @IsInt()
