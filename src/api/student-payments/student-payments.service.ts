@@ -123,38 +123,38 @@ export class StudentPaymentService {
   }
 
   async findOne(id: number) {
-  const payment = await this.paymentRepo
-    .createQueryBuilder('payment')
-    .leftJoin('payment.student', 'student')
-    .leftJoin('payment.group', 'group')
-    .select([
-      'payment.id',
-      'payment.amount',
-      'payment.paymentDate',
-      'payment.month',
-      'payment.paidAmount',
-      'payment.discount',
-      'payment.description',
+    const payment = await this.paymentRepo
+      .createQueryBuilder('payment')
+      .leftJoin('payment.student', 'student')
+      .leftJoin('payment.group', 'group')
+      .select([
+        'payment.id',
+        'payment.amount',
+        'payment.paymentDate',
+        'payment.month',
+        'payment.paidAmount',
+        'payment.discount',
+        'payment.description',
 
-      'student.id',
-      'student.fullName',
+        'student.id',
+        'student.fullName',
 
-      'group.id',
-      'group.name',
-    ])
-    .where('payment.id = :id', { id })
-    .getOne();
+        'group.id',
+        'group.name',
+      ])
+      .where('payment.id = :id', { id })
+      .getOne();
 
-  if (!payment) {
-    throw new NotFoundException('Tolov topilmadi');
+    if (!payment) {
+      throw new NotFoundException('Tolov topilmadi');
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Tolov muvaffaqiyatli olingan',
+      data: payment,
+    };
   }
-
-  return {
-    statusCode: 200,
-    message: 'Tolov muvaffaqiyatli olingan',
-    data: payment,
-  };
-}
   async update(id: number, dto: UpdateStudentPaymentDto) {
     const payment = await this.paymentRepo.findOne({
       where: { id },

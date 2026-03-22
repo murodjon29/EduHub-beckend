@@ -34,7 +34,9 @@ export class AttendanceService {
     const group = await this.groupRepo.findOne({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Group topilmadi');
 
-    const student = await this.studentRepo.findOne({ where: { id: studentId } });
+    const student = await this.studentRepo.findOne({
+      where: { id: studentId },
+    });
     if (!student) throw new NotFoundException('Student topilmadi');
 
     let teacher: Teacher | null = null;
@@ -140,13 +142,17 @@ export class AttendanceService {
     }
 
     if (studentId) {
-      const student = await this.studentRepo.findOne({ where: { id: studentId } });
+      const student = await this.studentRepo.findOne({
+        where: { id: studentId },
+      });
       if (!student) throw new NotFoundException('Student topilmadi');
       attendance.student = student;
     }
 
     if (teacherId) {
-      const teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
+      const teacher = await this.teacherRepo.findOne({
+        where: { id: teacherId },
+      });
       if (!teacher) throw new NotFoundException('Teacher topilmadi');
       attendance.teacher = teacher;
     }

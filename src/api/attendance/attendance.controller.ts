@@ -99,7 +99,7 @@ const CREATE_BODY_EXAMPLES = {
     },
   },
   withoutTeacher: {
-    summary: 'Teacher ko\'rsatilmagan holat',
+    summary: "Teacher ko'rsatilmagan holat",
     value: {
       groupId: 1,
       studentId: 7,
@@ -108,7 +108,7 @@ const CREATE_BODY_EXAMPLES = {
     },
   },
   withoutDate: {
-    summary: 'Date ko\'rsatilmasa bugungi sana olinadi',
+    summary: "Date ko'rsatilmasa bugungi sana olinadi",
     value: {
       groupId: 1,
       studentId: 8,
@@ -120,11 +120,11 @@ const CREATE_BODY_EXAMPLES = {
 
 const UPDATE_BODY_EXAMPLES = {
   updateStatus: {
-    summary: 'Faqat statusni o\'zgartirish',
+    summary: "Faqat statusni o'zgartirish",
     value: { status: 'ABSENT' },
   },
   updateDate: {
-    summary: 'Faqat sanani o\'zgartirish',
+    summary: "Faqat sanani o'zgartirish",
     value: { date: '2026-03-01' },
   },
   updateAll: {
@@ -155,8 +155,9 @@ export class AttendanceController {
   @Roles(Role.TEACHER)
   @Post()
   @ApiOperation({
-    summary: 'Yangi davomat qo\'shish',
-    description: 'Teacher o\'z guruhi uchun yangi davomat yozuvi yaratadi. Bir student uchun bir kunda faqat bitta davomat bo\'lishi mumkin.',
+    summary: "Yangi davomat qo'shish",
+    description:
+      "Teacher o'z guruhi uchun yangi davomat yozuvi yaratadi. Bir student uchun bir kunda faqat bitta davomat bo'lishi mumkin.",
   })
   @ApiBody({
     type: CreateAttendanceDto,
@@ -169,7 +170,8 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Duplicate davomat — shu sanada ushbu student uchun davomat allaqachon mavjud',
+    description:
+      'Duplicate davomat — shu sanada ushbu student uchun davomat allaqachon mavjud',
     schema: { example: DUPLICATE_EXAMPLE },
   })
   @ApiResponse({
@@ -185,14 +187,14 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -206,23 +208,24 @@ export class AttendanceController {
   @Get()
   @ApiOperation({
     summary: 'Barcha davomatlarni olish',
-    description: 'Tizimda mavjud barcha davomatlarni sana bo\'yicha kamayish tartibida qaytaradi.',
+    description:
+      "Tizimda mavjud barcha davomatlarni sana bo'yicha kamayish tartibida qaytaradi.",
   })
   @ApiResponse({
     status: 200,
-    description: 'Davomatlar ro\'yxati muvaffaqiyatli qaytarildi',
+    description: "Davomatlar ro'yxati muvaffaqiyatli qaytarildi",
     schema: { example: ATTENDANCE_LIST_EXAMPLE },
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -235,8 +238,9 @@ export class AttendanceController {
   @Roles(Role.TEACHER)
   @Get(':id')
   @ApiOperation({
-    summary: 'Bitta davomatni ID bo\'yicha olish',
-    description: 'Berilgan ID bo\'yicha bitta davomat yozuvini group, student va teacher ma\'lumotlari bilan qaytaradi.',
+    summary: "Bitta davomatni ID bo'yicha olish",
+    description:
+      "Berilgan ID bo'yicha bitta davomat yozuvini group, student va teacher ma'lumotlari bilan qaytaradi.",
   })
   @ApiParam({
     name: 'id',
@@ -256,14 +260,14 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -277,12 +281,13 @@ export class AttendanceController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Davomatni yangilash',
-    description: 'Mavjud davomat yozuvini qisman yoki to\'liq yangilaydi. Faqat o\'zgartirmoqchi bo\'lgan maydonlarni yuboring.',
+    description:
+      "Mavjud davomat yozuvini qisman yoki to'liq yangilaydi. Faqat o'zgartirmoqchi bo'lgan maydonlarni yuboring.",
   })
   @ApiParam({
     name: 'id',
     type: Number,
-    description: 'Yangilanishi kerak bo\'lgan davomat ID raqami',
+    description: "Yangilanishi kerak bo'lgan davomat ID raqami",
     example: 10,
   })
   @ApiBody({
@@ -296,7 +301,7 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Yangilangan ma\'lumotlar boshqa davomatga conflict qilmoqda',
+    description: "Yangilangan ma'lumotlar boshqa davomatga conflict qilmoqda",
     schema: { example: DUPLICATE_EXAMPLE },
   })
   @ApiResponse({
@@ -306,14 +311,14 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -333,8 +338,9 @@ export class AttendanceController {
   @Roles(Role.LEARNING_CENTER)
   @Post('learning-center/create')
   @ApiOperation({
-    summary: 'Learning Center — Yangi davomat qo\'shish',
-    description: 'Learning Center o\'z markaziga tegishli guruh uchun yangi davomat yaratadi.',
+    summary: "Learning Center — Yangi davomat qo'shish",
+    description:
+      "Learning Center o'z markaziga tegishli guruh uchun yangi davomat yaratadi.",
   })
   @ApiBody({
     type: CreateAttendanceDto,
@@ -347,7 +353,8 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Duplicate davomat — shu sanada ushbu student uchun davomat allaqachon mavjud',
+    description:
+      'Duplicate davomat — shu sanada ushbu student uchun davomat allaqachon mavjud',
     schema: { example: DUPLICATE_EXAMPLE },
   })
   @ApiResponse({
@@ -363,14 +370,14 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -383,24 +390,25 @@ export class AttendanceController {
   @Roles(Role.LEARNING_CENTER)
   @Get('learning-center/findAll')
   @ApiOperation({
-    summary: 'Learning Center — O\'z markazining barcha davomatlarini olish',
-    description: 'JWT token orqali learningCenterId aniqlanadi va faqat o\'sha markazga tegishli davomatlar qaytariladi.',
+    summary: "Learning Center — O'z markazining barcha davomatlarini olish",
+    description:
+      "JWT token orqali learningCenterId aniqlanadi va faqat o'sha markazga tegishli davomatlar qaytariladi.",
   })
   @ApiResponse({
     status: 200,
-    description: 'Davomatlar ro\'yxati muvaffaqiyatli qaytarildi',
+    description: "Davomatlar ro'yxati muvaffaqiyatli qaytarildi",
     schema: { example: ATTENDANCE_LIST_EXAMPLE },
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -414,8 +422,9 @@ export class AttendanceController {
   @Roles(Role.LEARNING_CENTER)
   @Get('learning-center/:id')
   @ApiOperation({
-    summary: 'Learning Center — Bitta davomatni ID bo\'yicha olish',
-    description: 'Faqat o\'z markaziga tegishli davomatni ko\'rish mumkin. Boshqa markazning davomati so\'ralsa 404 qaytariladi.',
+    summary: "Learning Center — Bitta davomatni ID bo'yicha olish",
+    description:
+      "Faqat o'z markaziga tegishli davomatni ko'rish mumkin. Boshqa markazning davomati so'ralsa 404 qaytariladi.",
   })
   @ApiParam({
     name: 'id',
@@ -435,14 +444,14 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -460,12 +469,13 @@ export class AttendanceController {
   @Patch('learning-center/:id')
   @ApiOperation({
     summary: 'Learning Center — Davomatni yangilash',
-    description: 'O\'z markaziga tegishli davomatni qisman yoki to\'liq yangilaydi.',
+    description:
+      "O'z markaziga tegishli davomatni qisman yoki to'liq yangilaydi.",
   })
   @ApiParam({
     name: 'id',
     type: Number,
-    description: 'Yangilanishi kerak bo\'lgan davomat ID raqami',
+    description: "Yangilanishi kerak bo'lgan davomat ID raqami",
     example: 10,
   })
   @ApiBody({
@@ -479,7 +489,7 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Yangilangan ma\'lumotlar boshqa davomatga conflict qilmoqda',
+    description: "Yangilangan ma'lumotlar boshqa davomatga conflict qilmoqda",
     schema: { example: DUPLICATE_EXAMPLE },
   })
   @ApiResponse({
@@ -489,14 +499,14 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
@@ -512,18 +522,18 @@ export class AttendanceController {
   @Roles(Role.LEARNING_CENTER)
   @Delete('learning-center/:id')
   @ApiOperation({
-    summary: 'Learning Center — Davomatni o\'chirish',
-    description: 'O\'z markaziga tegishli davomat yozuvini butunlay o\'chiradi.',
+    summary: "Learning Center — Davomatni o'chirish",
+    description: "O'z markaziga tegishli davomat yozuvini butunlay o'chiradi.",
   })
   @ApiParam({
     name: 'id',
     type: Number,
-    description: 'O\'chirilishi kerak bo\'lgan davomat ID raqami',
+    description: "O'chirilishi kerak bo'lgan davomat ID raqami",
     example: 10,
   })
   @ApiResponse({
     status: 200,
-    description: 'Davomat muvaffaqiyatli o\'chirildi',
+    description: "Davomat muvaffaqiyatli o'chirildi",
     schema: { example: DELETE_SUCCESS_EXAMPLE },
   })
   @ApiResponse({
@@ -533,14 +543,14 @@ export class AttendanceController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token berilmagan yoki noto\'g\'ri',
+    description: "Token berilmagan yoki noto'g'ri",
     schema: {
       example: { statusCode: 401, message: 'Unauthorized' },
     },
   })
   @ApiResponse({
     status: 403,
-    description: 'Ushbu amalni bajarish uchun ruxsat yo\'q',
+    description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },

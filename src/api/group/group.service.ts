@@ -73,18 +73,20 @@ export class GroupService {
       data: groups,
     };
   }
-
   async findByLearningCenter(learningCenterId: number) {
     const groups = await this.groupRepository
       .createQueryBuilder('groups')
       .leftJoinAndSelect('groups.teacher', 'teacher')
       .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
-      .leftJoinAndSelect('groups.groupStudents', 'groupStudents')
-      .leftJoinAndSelect('groupStudents.student', 'student') // ← bu qator yetishmayotgan edi
+      .leftJoinAndSelect(
+        'groups.groupStudents',
+        'groupStudents',
+        'groupStudents.status = :status', // ← shart JOIN ichiga o'tdi
+        { status: GroupStudentStatus.ACTIVE },
+      )
+      .leftJoinAndSelect('groupStudents.student', 'student')
       .where('learningCenter.id = :learningCenterId', { learningCenterId })
-      .andWhere('groupStudents.status = :status', {
-        status: GroupStudentStatus.ACTIVE,
-      }) // ixtiyoriy
+      // andWhere olib tashlandi!
       .getMany();
 
     return {
