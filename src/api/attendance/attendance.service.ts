@@ -55,13 +55,6 @@ export class AttendanceService {
       },
       relations: ['group', 'student'],
     });
-
-    if (existing) {
-      throw new BadRequestException(
-        'Bu student uchun shu sanada davomat allaqachon mavjud',
-      );
-    }
-
     const attendance = this.attendanceRepo.create({
       group,
       student,
