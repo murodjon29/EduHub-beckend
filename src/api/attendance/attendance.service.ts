@@ -73,23 +73,27 @@ export class AttendanceService {
   }
 
   async learningCenterFindAll(learningCenterId: number) {
-    return this.attendanceRepo.find({
-      where: {
-        student: { learningCenter: { id: learningCenterId } },
-      },
-      relations: ['group', 'student', 'student.learningCenter', 'teacher'],
-      order: { date: 'DESC' },
-    });
+    return this.attendanceRepo
+      .createQueryBuilder('attendance')
+      .leftJoinAndSelect('attendance.group', 'group')
+      .leftJoinAndSelect('attendance.student', 'student')
+      .leftJoinAndSelect('student.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('attendance.teacher', 'teacher')
+      .where('learningCenter.id = :learningCenterId', { learningCenterId })
+      .orderBy('attendance.date', 'DESC')
+      .getMany();
   }
 
   async learningCenterFindOne(id: number, learningCenterId: number) {
-    const attendance = await this.attendanceRepo.findOne({
-      where: {
-        id,
-        student: { learningCenter: { id: learningCenterId } },
-      },
-      relations: ['group', 'student', 'student.learningCenter', 'teacher'],
-    });
+    const attendance = await this.attendanceRepo
+      .createQueryBuilder('attendance')
+      .leftJoinAndSelect('attendance.group', 'group')
+      .leftJoinAndSelect('attendance.student', 'student')
+      .leftJoinAndSelect('student.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('attendance.teacher', 'teacher')
+      .where('attendance.id = :id', { id })
+      .andWhere('learningCenter.id = :learningCenterId', { learningCenterId })
+      .getOne();
 
     if (!attendance) {
       throw new NotFoundException('Attendance topilmadi');
@@ -97,25 +101,32 @@ export class AttendanceService {
     return attendance;
   }
 
-  async findAll() {
-    return this.attendanceRepo.find({
-      relations: ['group', 'student', 'teacher'],
-      order: { date: 'DESC' },
-    });
+  async findAll(groupId: number) {
+    return this.attendanceRepo
+      .createQueryBuilder('attendance')
+      .leftJoinAndSelect('attendance.group', 'group')
+      .leftJoinAndSelect('attendance.student', 'student')
+      .leftJoinAndSelect('attendance.teacher', 'teacher')
+      .where('group.id = :groupId', { groupId })
+      .orderBy('attendance.date', 'DESC')
+      .getMany();
   }
 
-  async findOne(id: number) {
-    const attendance = await this.attendanceRepo.findOne({
-      where: { id },
-      relations: ['group', 'student', 'teacher'],
-    });
+  async findOne(id: number, groupId: number) {
+    const attendance = await this.attendanceRepo
+      .createQueryBuilder('attendance')
+      .leftJoinAndSelect('attendance.group', 'group')
+      .leftJoinAndSelect('attendance.student', 'student')
+      .leftJoinAndSelect('attendance.teacher', 'teacher')
+      .where('attendance.id = :id', { id })
+      .andWhere('group.id = :groupId', { groupId })
+      .getOne();
 
     if (!attendance) {
       throw new NotFoundException('Attendance topilmadi');
     }
     return attendance;
   }
-
   async update(updateDto: UpdateAttendanceDto, id: number) {
     const attendance = await this.attendanceRepo.findOne({
       where: { id },
@@ -185,7 +196,11 @@ export class AttendanceService {
   }
 
   async remove(id: number) {
-    const attendance = await this.findOne(id);
+    const attendance = await this.attendanceRepo.findOne({ where: { id } });
+
+    if (!attendance) {
+      throw new NotFoundException('Attendance topilmadi');
+    }
     await this.attendanceRepo.remove(attendance);
 
     return {

@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Patch,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -205,7 +206,7 @@ export class AttendanceController {
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER)
-  @Get()
+  @Get(':groupId')
   @ApiOperation({
     summary: 'Barcha davomatlarni olish',
     description:
@@ -230,8 +231,10 @@ export class AttendanceController {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
   })
-  findAll(): Promise<Attendance[]> {
-    return this.attendanceService.findAll();
+  findAll(
+    @Param('groupId', ParseIntPipe) groupId: number,
+  ): Promise<Attendance[]> {
+    return this.attendanceService.findAll(groupId);
   }
 
   @UseGuards(JwtGuard, RolesGuard)
@@ -272,8 +275,11 @@ export class AttendanceController {
       example: { statusCode: 403, message: 'Forbidden resource' },
     },
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Attendance> {
-    return this.attendanceService.findOne(id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('groupId', ParseIntPipe) groupId: number,
+  ): Promise<Attendance> {
+    return this.attendanceService.findOne(id, groupId);
   }
 
   @UseGuards(JwtGuard, RolesGuard)
