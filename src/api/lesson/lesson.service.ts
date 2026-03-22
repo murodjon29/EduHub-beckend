@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { Lesson } from '../../core/entities/lesson.entity';
 import { Group } from '../../core/entities/group.entity';
@@ -51,6 +51,16 @@ export class LessonService {
 
   async findAll(): Promise<Lesson[]> {
     return this.lessonRepo.find({
+      relations: ['group', 'teacher'],
+      order: { lessonDate: 'ASC' },
+    });
+  }
+
+  async findByDateRange(startDate: string, endDate: string): Promise<Lesson[]> {
+    return this.lessonRepo.find({
+      where: {
+        lessonDate: Between(startDate, endDate),
+      },
       relations: ['group', 'teacher'],
       order: { lessonDate: 'ASC' },
     });
