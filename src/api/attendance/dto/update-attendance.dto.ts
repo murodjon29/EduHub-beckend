@@ -6,8 +6,18 @@ import {
   IsDateString,
   IsArray,
   ArrayNotEmpty,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { AttendanceStatus } from '../../../common/enum';
+
+export class UpdateStudentAttendanceDto {
+  @IsInt()
+  studentId: number;
+
+  @IsEnum(AttendanceStatus)
+  status: AttendanceStatus;
+}
 
 export class UpdateAttendanceDto {
   @IsOptional()
@@ -17,8 +27,9 @@ export class UpdateAttendanceDto {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  @IsInt({ each: true })
-  studentIds?: number[];
+  @ValidateNested({ each: true })
+  @Type(() => UpdateStudentAttendanceDto)
+  students?: UpdateStudentAttendanceDto[];
 
   @IsOptional()
   @IsInt()
@@ -27,8 +38,4 @@ export class UpdateAttendanceDto {
   @IsOptional()
   @IsDateString()
   date?: string;
-
-  @IsOptional()
-  @IsEnum(AttendanceStatus)
-  status?: AttendanceStatus;
 }
