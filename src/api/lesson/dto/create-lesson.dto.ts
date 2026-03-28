@@ -30,4 +30,9 @@ export class CreateLessonDto {
   @ApiProperty({ example: '16:00:00' })
   @IsString()
   endTime: string;
+
+  @ApiProperty({ example: 'active' })
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

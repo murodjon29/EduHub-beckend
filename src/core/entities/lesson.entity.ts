@@ -28,6 +28,10 @@ export class Lesson extends BaseModel {
   @JoinColumn({ name: 'group_id' })
   group: Group;
 
+
+  @Column({ type: 'enum', enum: ['active', 'inactive'], default: 'active', nullable: true })
+  status: string;
+
   // Teacher bilan bog'lanish (Many-to-One)
   @ManyToOne(() => Teacher, (teacher) => teacher.lessons, {
     onDelete: 'SET NULL',
