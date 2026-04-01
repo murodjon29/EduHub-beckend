@@ -11,6 +11,7 @@ import { Group } from '../../core/entities/group.entity';
 import { Student } from '../../core/entities/student.entity';
 import { Teacher } from '../../core/entities/teacher.entity';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
+import { Lesson } from '../../core/entities/lesson.entity';
 
 @Injectable()
 export class AttendanceService {
@@ -26,71 +27,91 @@ export class AttendanceService {
 
     @InjectRepository(Teacher)
     private readonly teacherRepo: Repository<Teacher>,
+
+    @InjectRepository(Lesson)
+    private readonly lessonRepo: Repository<Lesson>,
   ) {}
 
-  async create(dto: CreateAttendanceDto) {
-    const { groupId, students, teacherId, date } = dto;
+ async create(dto: CreateAttendanceDto) {
+  const { groupId, students, teacherId, date, lessonId } = dto;
 
-    const group = await this.groupRepo.findOne({ where: { id: groupId } });
-    if (!group) throw new NotFoundException('Group topilmadi');
+  // ✅ Barcha asosiy entitylarni oldin tekshiramiz
+  const [lesson, group] = await Promise.all([
+    this.lessonRepo.findOne({ where: { id: lessonId } }),
+    this.groupRepo.findOne({ where: { id: groupId } }),
+  ]);
 
-    let teacher: Teacher | null = null;
-    if (teacherId) {
-      teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
-      if (!teacher) throw new NotFoundException('Teacher topilmadi');
-    }
+  if (!lesson) throw new NotFoundException('Lesson topilmadi');
+  if (!group) throw new NotFoundException('Group topilmadi');
 
-    const attendanceDate = date ?? new Date().toISOString().split('T')[0];
-
-    type SkippedResult = {
-      skipped: true;
-      studentId: number;
-      existing: Attendance;
-    };
-    type CreatedResult = Attendance;
-    const results: (SkippedResult | CreatedResult)[] = [];
-
-    for (const { studentId, status } of students) {
-      const student = await this.studentRepo.findOne({
-        where: { id: studentId },
-      });
-      if (!student)
-        throw new NotFoundException(`Student topilmadi (id: ${studentId})`);
-
-      const existing = await this.attendanceRepo
-        .createQueryBuilder('attendance')
-        .leftJoin('attendance.group', 'group')
-        .leftJoin('attendance.student', 'student')
-        .where('group.id = :groupId', { groupId })
-        .andWhere('student.id = :studentId', { studentId })
-        .andWhere('attendance.date = :attendanceDate', { attendanceDate })
-        .getOne();
-
-      if (existing) {
-        results.push({ skipped: true, studentId, existing });
-        continue;
-      }
-
-      const attendance = this.attendanceRepo.create({
-        group,
-        student,
-        ...(teacher && { teacher }),
-        date: attendanceDate,
-        status, // har bir student o'z statusiga ega
-      });
-
-      const saved = await this.attendanceRepo.save(attendance);
-
-      const full = await this.attendanceRepo.findOne({
-        where: { id: saved.id },
-        relations: ['group', 'student', 'teacher'],
-      });
-
-      if (full) results.push(full);
-    }
-
-    return results;
+  // ✅ Lesson groupga tegishli ekanligini tekshiramiz
+  if (lesson.group?.id && lesson.group.id !== groupId) {
+    throw new BadRequestException('Bu lesson ushbu groupga tegishli emas');
   }
+
+  let teacher: Teacher | null = null;
+  if (teacherId) {
+    teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
+    if (!teacher) throw new NotFoundException('Teacher topilmadi');
+  }
+
+  const attendanceDate = date ?? new Date().toISOString().split('T')[0];
+
+  type SkippedResult = {
+    skipped: true;
+    studentId: number;
+    existing: Attendance;
+  };
+  type CreatedResult = Attendance;
+  const results: (SkippedResult | CreatedResult)[] = [];
+
+  for (const { studentId, status } of students) {
+    const student = await this.studentRepo.findOne({
+      where: { id: studentId },
+    });
+    if (!student) {
+      throw new NotFoundException(`Student topilmadi (id: ${studentId})`);
+    }
+
+    // ✅ Lesson + student kombinatsiyasi ham tekshiriladi (duplikat oldini olish)
+    const existing = await this.attendanceRepo
+      .createQueryBuilder('attendance')
+      .leftJoin('attendance.group', 'group')
+      .leftJoin('attendance.student', 'student')
+      .leftJoin('attendance.lesson', 'lesson')
+      .where('group.id = :groupId', { groupId })
+      .andWhere('student.id = :studentId', { studentId })
+      .andWhere('lesson.id = :lessonId', { lessonId })
+      .andWhere('attendance.date = :attendanceDate', { attendanceDate })
+      .getOne();
+
+    if (existing) {
+      results.push({ skipped: true, studentId, existing });
+      continue;
+    }
+
+    const attendance = this.attendanceRepo.create({
+      group,
+      student,
+      lesson,           // ✅ lesson to'g'ri saqlanadi
+      date: attendanceDate,
+      status,
+      ...(teacher && { teacher }),
+    });
+
+    const saved = await this.attendanceRepo.save(attendance);
+
+    // ✅ Barcha relationlar bilan qaytaramiz
+    const full = await this.attendanceRepo.findOne({
+      where: { id: saved.id },
+      relations: ['group', 'student', 'teacher', 'lesson'],
+    });
+
+    if (full) results.push(full);
+  }
+
+  return results;
+}
   async learningCenterFindAll(learningCenterId: number) {
     return this.attendanceRepo
       .createQueryBuilder('attendance')
@@ -147,112 +168,143 @@ export class AttendanceService {
     return attendance;
   }
   async update(updateDto: UpdateAttendanceDto, id: number) {
-    const attendance = await this.attendanceRepo
-      .createQueryBuilder('attendance')
-      .leftJoinAndSelect('attendance.group', 'group')
-      .leftJoinAndSelect('attendance.student', 'student')
-      .leftJoinAndSelect('attendance.teacher', 'teacher')
-      .where('attendance.id = :id', { id })
-      .getOne();
+  const attendance = await this.attendanceRepo
+    .createQueryBuilder('attendance')
+    .leftJoinAndSelect('attendance.group', 'group')
+    .leftJoinAndSelect('attendance.student', 'student')
+    .leftJoinAndSelect('attendance.teacher', 'teacher')
+    .leftJoinAndSelect('attendance.lesson', 'lesson') // ✅ lesson qo'shildi
+    .where('attendance.id = :id', { id })
+    .getOne();
 
-    if (!attendance) throw new NotFoundException('Attendance topilmadi');
+  if (!attendance) throw new NotFoundException('Attendance topilmadi');
 
-    const { groupId, students, teacherId, date } = updateDto;
+  const { groupId, students, teacherId, date, lessonId } = updateDto;
 
-    if (groupId) {
-      const group = await this.groupRepo.findOne({ where: { id: groupId } });
-      if (!group) throw new NotFoundException('Group topilmadi');
-      attendance.group = group;
+  // ✅ Group yangilanishi
+  if (groupId) {
+    const group = await this.groupRepo.findOne({ where: { id: groupId } });
+    if (!group) throw new NotFoundException('Group topilmadi');
+    attendance.group = group;
+  }
+
+  // ✅ Teacher yangilanishi
+  if (teacherId) {
+    const teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
+    if (!teacher) throw new NotFoundException('Teacher topilmadi');
+    attendance.teacher = teacher;
+  }
+
+  // ✅ Lesson yangilanishi
+  let lesson = attendance.lesson;
+  if (lessonId) {
+    const foundLesson = await this.lessonRepo.findOne({
+      where: { id: lessonId },
+      relations: ['group'],
+    });
+    if (!foundLesson) throw new NotFoundException('Lesson topilmadi');
+
+    // Lesson ushbu groupga tegishli ekanligini tekshiramiz
+    const currentGroupId = groupId ?? attendance.group?.id;
+    if (foundLesson.group?.id && foundLesson.group.id !== currentGroupId) {
+      throw new BadRequestException('Bu lesson ushbu groupga tegishli emas');
     }
 
-    if (teacherId) {
-      const teacher = await this.teacherRepo.findOne({
-        where: { id: teacherId },
-      });
-      if (!teacher) throw new NotFoundException('Teacher topilmadi');
-      attendance.teacher = teacher;
-    }
+    lesson = foundLesson;
+    attendance.lesson = lesson;
+  }
 
-    if (date) attendance.date = date;
+  if (date) attendance.date = date;
 
-    // students kelmasa — faqat bitta yozuvni yangilaymiz (date, teacher)
-    if (!students || students.length === 0) {
-      await this.attendanceRepo.save(attendance);
-      return {
-        statusCode: 200,
-        message: 'Attendance updated successfully',
-        data: [attendance],
-      };
-    }
-
-    type SkippedResult = {
-      skipped: true;
-      studentId: number;
-      existing: Attendance;
-    };
-    type UpdatedResult = Attendance;
-    const results: (SkippedResult | UpdatedResult)[] = [];
-
-    for (const { studentId, status } of students) {
-      const student = await this.studentRepo.findOne({
-        where: { id: studentId },
-      });
-      if (!student)
-        throw new NotFoundException(`Student topilmadi (id: ${studentId})`);
-
-      const newDate = date ?? attendance.date;
-      const newGroupId = groupId ?? attendance.group.id;
-
-      // Duplicate tekshiruv
-      const duplicate = await this.attendanceRepo
-        .createQueryBuilder('att')
-        .leftJoin('att.group', 'group')
-        .leftJoin('att.student', 'student')
-        .where('group.id = :newGroupId', { newGroupId })
-        .andWhere('student.id = :studentId', { studentId })
-        .andWhere('att.date = :newDate', { newDate })
-        .andWhere('att.id != :id', { id })
-        .getOne();
-
-      if (duplicate) {
-        results.push({ skipped: true, studentId, existing: duplicate });
-        continue;
-      }
-
-      // Mavjud attendance ni topamiz yoki yangisini yaratamiz
-      let studentAttendance = await this.attendanceRepo
-        .createQueryBuilder('att')
-        .leftJoinAndSelect('att.group', 'group')
-        .leftJoinAndSelect('att.student', 'student')
-        .leftJoinAndSelect('att.teacher', 'teacher')
-        .where('group.id = :newGroupId', { newGroupId })
-        .andWhere('student.id = :studentId', { studentId })
-        .andWhere('att.date = :newDate', { newDate })
-        .getOne();
-
-      if (!studentAttendance) {
-        studentAttendance = this.attendanceRepo.create({
-          group: attendance.group,
-          student,
-          teacher: attendance.teacher,
-          date: newDate,
-          status,
-        });
-      } else {
-        studentAttendance.status = status;
-        if (teacherId) studentAttendance.teacher = attendance.teacher;
-      }
-
-      const saved = await this.attendanceRepo.save(studentAttendance);
-      results.push(saved);
-    }
-
+  // Students kelmasa — faqat asosiy yozuvni yangilaymiz
+  if (!students || students.length === 0) {
+    const saved = await this.attendanceRepo.save(attendance);
     return {
       statusCode: 200,
       message: 'Attendance updated successfully',
-      data: results,
+      data: [saved],
     };
   }
+
+  type SkippedResult = { skipped: true; studentId: number; existing: Attendance };
+  type UpdatedResult = Attendance;
+  const results: (SkippedResult | UpdatedResult)[] = [];
+
+  const newDate = date ?? attendance.date;
+  const newGroupId = groupId ?? attendance.group.id;
+  const newLessonId = lessonId ?? lesson?.id;
+
+  for (const { studentId, status } of students) {
+    const student = await this.studentRepo.findOne({ where: { id: studentId } });
+    if (!student) {
+      throw new NotFoundException(`Student topilmadi (id: ${studentId})`);
+    }
+
+    // ✅ Duplicate tekshiruv: lessonId ham hisobga olinadi, o'zini chiqarib tashlaymiz
+    const duplicate = await this.attendanceRepo
+      .createQueryBuilder('att')
+      .leftJoin('att.group', 'group')
+      .leftJoin('att.student', 'student')
+      .leftJoin('att.lesson', 'lesson')
+      .where('group.id = :newGroupId', { newGroupId })
+      .andWhere('student.id = :studentId', { studentId })
+      .andWhere('att.date = :newDate', { newDate })
+      .andWhere('lesson.id = :newLessonId', { newLessonId })
+      .andWhere('att.id != :id', { id }) // ✅ o'zini chiqarib tashlaydi
+      .getOne();
+
+    if (duplicate) {
+      results.push({ skipped: true, studentId, existing: duplicate });
+      continue;
+    }
+
+    // ✅ Mavjud attendance ni topamiz (shu student + group + lesson + date)
+    let studentAttendance = await this.attendanceRepo
+      .createQueryBuilder('att')
+      .leftJoinAndSelect('att.group', 'group')
+      .leftJoinAndSelect('att.student', 'student')
+      .leftJoinAndSelect('att.teacher', 'teacher')
+      .leftJoinAndSelect('att.lesson', 'lesson')
+      .where('group.id = :newGroupId', { newGroupId })
+      .andWhere('student.id = :studentId', { studentId })
+      .andWhere('att.date = :newDate', { newDate })
+      .andWhere('lesson.id = :newLessonId', { newLessonId })
+      .getOne();
+
+    if (!studentAttendance) {
+      // ✅ Yangi yaratilganda lesson ham saqlanadi
+      studentAttendance = this.attendanceRepo.create({
+        group: attendance.group,
+        student,
+        teacher: attendance.teacher ?? undefined,
+        lesson: lesson ?? undefined,
+        date: newDate,
+        status,
+      });
+    } else {
+      // ✅ Mavjud yozuvni yangilaymiz
+      studentAttendance.status = status;
+      if (teacherId) studentAttendance.teacher = attendance.teacher;
+      if (lessonId) studentAttendance.lesson = lesson;
+    }
+
+    const saved = await this.attendanceRepo.save(studentAttendance);
+
+    // ✅ To'liq relationlar bilan qaytaramiz
+    const full = await this.attendanceRepo.findOne({
+      where: { id: saved.id },
+      relations: ['group', 'student', 'teacher', 'lesson'],
+    });
+
+    if (full) results.push(full);
+  }
+
+  return {
+    statusCode: 200,
+    message: 'Attendance updated successfully',
+    data: results,
+  };
+}
   async remove(id: number) {
     const attendance = await this.attendanceRepo.findOne({ where: { id } });
 

@@ -7,6 +7,7 @@ import {
   IsArray,
   ArrayNotEmpty,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AttendanceStatus } from '../../../common/enum';
@@ -36,4 +37,7 @@ export class CreateAttendanceDto {
   @IsOptional()
   @IsDateString()
   date?: string;
+
+  @IsNumber()
+  lessonId: number;
 }

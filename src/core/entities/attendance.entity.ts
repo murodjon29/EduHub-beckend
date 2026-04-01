@@ -4,6 +4,7 @@ import { Group } from './group.entity';
 import { Student } from './student.entity';
 import { AttendanceStatus } from '../../common/enum';
 import { Teacher } from './teacher.entity';
+import { Lesson } from './lesson.entity';
 
 @Entity('attendances')
 export class Attendance extends BaseModel {
@@ -12,29 +13,37 @@ export class Attendance extends BaseModel {
     nullable: false,
   })
   @JoinColumn({ name: 'group_id' })
-  group: Group; // Qaysi guruhga dars bo'lgan
+  group: Group;
 
   @ManyToOne(() => Student, (student) => student.attendances, {
     onDelete: 'CASCADE',
     nullable: false,
   })
   @JoinColumn({ name: 'student_id' })
-  student: Student; // Qaysi o'quvchi
+  student: Student;
 
   @ManyToOne(() => Teacher, (teacher) => teacher.attendances, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn({ name: 'teacher_id' })
-  teacher: Teacher; // Qaysi o'qituvchi dars o'tgan
+  teacher: Teacher;
+
+  // ✅ OneToOne → ManyToOne: bir lesson'da ko'p attendance bo'ladi
+  @ManyToOne(() => Lesson, (lesson) => lesson.attendances, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'lesson_id' })
+  lesson: Lesson;
 
   @Column({ type: 'date', default: () => 'CURRENT_DATE' })
-  date: string; // Dars qaysi sanada bo'lgan
+  date: string;
 
   @Column({
     type: 'enum',
     enum: AttendanceStatus,
     default: AttendanceStatus.ABSENT,
   })
-  status: AttendanceStatus; // O'quvchining davomati: Keldi/Kelmadi/Uzrli
+  status: AttendanceStatus;
 }

@@ -1,17 +1,16 @@
-// update-attendance.dto.ts
 import {
   IsEnum,
   IsInt,
   IsOptional,
   IsDateString,
   IsArray,
-  ArrayNotEmpty,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AttendanceStatus } from '../../../common/enum';
 
-export class UpdateStudentAttendanceDto {
+export class StudentAttendanceDto {
   @IsInt()
   studentId: number;
 
@@ -26,10 +25,9 @@ export class UpdateAttendanceDto {
 
   @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @ValidateNested({ each: true })
-  @Type(() => UpdateStudentAttendanceDto)
-  students?: UpdateStudentAttendanceDto[];
+  @Type(() => StudentAttendanceDto)
+  students?: StudentAttendanceDto[];
 
   @IsOptional()
   @IsInt()
@@ -38,4 +36,8 @@ export class UpdateAttendanceDto {
   @IsOptional()
   @IsDateString()
   date?: string;
+
+  @IsOptional()   // ✅ lessonId qo'shildi
+  @IsNumber()
+  lessonId?: number;
 }

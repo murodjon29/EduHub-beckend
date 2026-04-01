@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseModel } from '../../common/database';
 import { Group } from './group.entity';
 import { Teacher } from './teacher.entity';
+import { Attendance } from './attendance.entity';
 
 @Entity('lessons')
 export class Lesson extends BaseModel {
@@ -12,15 +13,14 @@ export class Lesson extends BaseModel {
   description: string;
 
   @Column({ type: 'date', nullable: true })
-  lessonDate: string; // Dars sanasi
+  lessonDate: string;
 
   @Column({ type: 'time', nullable: true })
-  startTime: string; // Boshlanish vaqti
+  startTime: string;
 
   @Column({ type: 'time', nullable: true })
-  endTime: string; // Tugash vaqti
+  endTime: string;
 
-  // Group bilan bog'lanish (Many-to-One)
   @ManyToOne(() => Group, (group) => group.lessons, {
     onDelete: 'CASCADE',
     nullable: false,
@@ -28,15 +28,22 @@ export class Lesson extends BaseModel {
   @JoinColumn({ name: 'group_id' })
   group: Group;
 
-
-  @Column({ type: 'enum', enum: ['active', 'inactive'], default: 'active', nullable: true })
+  @Column({
+    type: 'enum',
+    enum: ['active', 'inactive'],
+    default: 'active',
+    nullable: true,
+  })
   status: string;
 
-  // Teacher bilan bog'lanish (Many-to-One)
   @ManyToOne(() => Teacher, (teacher) => teacher.lessons, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn({ name: 'teacher_id' })
   teacher: Teacher;
+
+  // ✅ OneToOne → OneToMany
+  @OneToMany(() => Attendance, (attendance) => attendance.lesson)
+  attendances: Attendance[];
 }
