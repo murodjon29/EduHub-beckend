@@ -51,7 +51,7 @@ export class LessonService {
 
   async findAll(): Promise<Lesson[]> {
     return this.lessonRepo.find({
-      relations: ['group', 'teacher'],
+      relations: ['group', 'teacher', 'attendances'],
       order: { lessonDate: 'ASC' },
     });
   }
@@ -61,7 +61,7 @@ export class LessonService {
       where: {
         lessonDate: Between(startDate, endDate),
       },
-      relations: ['group', 'teacher'],
+      relations: ['group', 'teacher', 'attendances'],
       order: { lessonDate: 'ASC' },
     });
   }
@@ -69,7 +69,7 @@ export class LessonService {
   async findOne(id: number) {
     const lesson = await this.lessonRepo.findOne({
       where: { id },
-      relations: ['group', 'teacher'],
+      relations: ['group', 'teacher', 'attendances'],
     });
 
     if (!lesson) {
