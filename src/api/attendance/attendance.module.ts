@@ -9,7 +9,9 @@ import { Group } from '../../core/entities/group.entity';
 import { Lesson } from '../../core/entities/lesson.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attendance, Group, Student, Teacher, Lesson])],
+  imports: [
+    TypeOrmModule.forFeature([Attendance, Group, Student, Teacher, Lesson]),
+  ],
   controllers: [AttendanceController],
   providers: [AttendanceService],
 })

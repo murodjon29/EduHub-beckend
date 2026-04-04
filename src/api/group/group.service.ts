@@ -64,7 +64,7 @@ export class GroupService {
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
       .leftJoinAndSelect('groupStudents.student', 'student')
-        .leftJoinAndSelect('group.lessons', 'lessons')
+      .leftJoinAndSelect('group.lessons', 'lessons')
       .where('teacher.id = :teacherId', { teacherId })
       .getMany();
 
@@ -101,7 +101,12 @@ export class GroupService {
   async findOne(id: number) {
     const group = await this.groupRepository.findOne({
       where: { id },
-      relations: ['teacher', 'learningCenter', 'groupStudents.student', "lessons"],
+      relations: [
+        'teacher',
+        'learningCenter',
+        'groupStudents.student',
+        'lessons',
+      ],
     });
     if (!group) {
       throw new NotFoundException('Guruh topilmadi');

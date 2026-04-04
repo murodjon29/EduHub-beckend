@@ -37,7 +37,7 @@ export class UpdateAttendanceDto {
   @IsDateString()
   date?: string;
 
-  @IsOptional()   // ✅ lessonId qo'shildi
+  @IsOptional() // ✅ lessonId qo'shildi
   @IsNumber()
   lessonId?: number;
 }
