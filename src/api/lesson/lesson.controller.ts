@@ -26,6 +26,7 @@ import { Role } from '../../common/enum';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
+import { group } from 'console';
 
 @ApiTags('Lessons')
 @ApiBearerAuth('Authorization')
@@ -127,6 +128,10 @@ export class LessonController {
             startTime: '14:00:00',
             endTime: '16:00:00',
             group: { id: 1, name: '1-A Guruh' },
+            groupStudents: [
+              { id: 1, student: { id: 1, firstName: 'John', lastName: 'Doe' } },
+              { id: 2, student: { id: 2, firstName: 'Jane', lastName: 'Smith' } },
+            ],
             teacher: { id: 2, firstName: 'Ali', lastName: 'Valiyev' },
           },
           {
