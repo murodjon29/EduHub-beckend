@@ -64,6 +64,7 @@ export class GroupService {
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
       .leftJoinAndSelect('groupStudents.student', 'student')
+      .leftJoinAndSelect('group.lessons.attendances', 'attendances')
       .leftJoinAndSelect('group.lessons', 'lessons')
       .where('teacher.id = :teacherId', { teacherId })
       .getMany();
@@ -80,6 +81,7 @@ export class GroupService {
       .leftJoinAndSelect('groups.teacher', 'teacher')
       .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
       .leftJoinAndSelect('groups.lessons', 'lessons')
+      .leftJoinAndSelect('groups.lessons.attendances', 'attendances')
       .leftJoinAndSelect(
         'groups.groupStudents',
         'groupStudents',
@@ -106,6 +108,7 @@ export class GroupService {
         'learningCenter',
         'groupStudents.student',
         'lessons',
+        'lessons.attendances',
       ],
     });
     if (!group) {
@@ -126,6 +129,7 @@ export class GroupService {
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
       .leftJoinAndSelect('groupStudents.student', 'student')
       .leftJoinAndSelect('group.lessons', 'lessons')
+      .leftJoinAndSelect('group.lessons.attendances', 'attendances')
       .where('teacher.id = :teacherId', { teacherId })
       .andWhere('group.id = :groupId', { groupId })
       .getOne();
