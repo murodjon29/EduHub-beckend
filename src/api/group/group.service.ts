@@ -47,9 +47,16 @@ export class GroupService {
   }
 
   async findAll() {
-    const groups = await this.groupRepository.find({
-      relations: ['teacher', 'learningCenter', 'groupStudents'],
-    });
+    const groups = await this.groupRepository
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.teacher', 'teacher')
+      .leftJoinAndSelect('group.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('group.groupStudents', 'groupStudents')
+      .leftJoinAndSelect('groupStudents.student', 'student')
+      .leftJoinAndSelect('group.lessons', 'lessons')
+      .leftJoinAndSelect('lessons.attendances', 'attendances') // ✅ to'g'ri
+      .getMany();
+
     return {
       statusCode: 200,
       message: 'Guruhlar muvaffaqiyatli olingan',
@@ -64,33 +71,33 @@ export class GroupService {
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
       .leftJoinAndSelect('groupStudents.student', 'student')
-      .leftJoinAndSelect('group.lessons.attendances', 'attendances')
       .leftJoinAndSelect('group.lessons', 'lessons')
+      .leftJoinAndSelect('lessons.attendances', 'attendances') // ✅ to'g'ri
       .where('teacher.id = :teacherId', { teacherId })
       .getMany();
 
     return {
       statusCode: 200,
-      message: 'Guruhlar muvaffaqiyatli olindan',
+      message: 'Guruhlar muvaffaqiyatli olingan',
       data: groups,
     };
   }
+
   async findByLearningCenter(learningCenterId: number) {
     const groups = await this.groupRepository
-      .createQueryBuilder('groups')
-      .leftJoinAndSelect('groups.teacher', 'teacher')
-      .leftJoinAndSelect('groups.learningCenter', 'learningCenter')
-      .leftJoinAndSelect('groups.lessons', 'lessons')
-      .leftJoinAndSelect('groups.lessons.attendances', 'attendances')
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.teacher', 'teacher')
+      .leftJoinAndSelect('group.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('group.lessons', 'lessons')
+      .leftJoinAndSelect('lessons.attendances', 'attendances') // ✅ to'g'ri
       .leftJoinAndSelect(
-        'groups.groupStudents',
+        'group.groupStudents',
         'groupStudents',
-        'groupStudents.status = :status', // ← shart JOIN ichiga o'tdi
+        'groupStudents.status = :status',
         { status: GroupStudentStatus.ACTIVE },
       )
       .leftJoinAndSelect('groupStudents.student', 'student')
       .where('learningCenter.id = :learningCenterId', { learningCenterId })
-      // andWhere olib tashlandi!
       .getMany();
 
     return {
@@ -101,19 +108,21 @@ export class GroupService {
   }
 
   async findOne(id: number) {
-    const group = await this.groupRepository.findOne({
-      where: { id },
-      relations: [
-        'teacher',
-        'learningCenter',
-        'groupStudents.student',
-        'lessons',
-        'lessons.attendances',
-      ],
-    });
+    const group = await this.groupRepository
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.teacher', 'teacher')
+      .leftJoinAndSelect('group.learningCenter', 'learningCenter')
+      .leftJoinAndSelect('group.groupStudents', 'groupStudents')
+      .leftJoinAndSelect('groupStudents.student', 'student')
+      .leftJoinAndSelect('group.lessons', 'lessons')
+      .leftJoinAndSelect('lessons.attendances', 'attendances') // ✅ to'g'ri
+      .where('group.id = :id', { id })
+      .getOne();
+
     if (!group) {
       throw new NotFoundException('Guruh topilmadi');
     }
+
     return {
       statusCode: 200,
       message: 'Guruh muvaffaqiyatli olingan',
@@ -129,7 +138,7 @@ export class GroupService {
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
       .leftJoinAndSelect('groupStudents.student', 'student')
       .leftJoinAndSelect('group.lessons', 'lessons')
-      .leftJoinAndSelect('group.lessons.attendances', 'attendances')
+      .leftJoinAndSelect('lessons.attendances', 'attendances') // ✅ to'g'ri
       .where('teacher.id = :teacherId', { teacherId })
       .andWhere('group.id = :groupId', { groupId })
       .getOne();

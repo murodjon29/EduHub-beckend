@@ -143,7 +143,7 @@ export class AttendanceService {
   }
 
   async findAll(groupId: number) {
-    const attendances = await  this.attendanceRepo
+    const attendances = await this.attendanceRepo
       .createQueryBuilder('attendance')
       .leftJoinAndSelect('attendance.group', 'group')
       .leftJoinAndSelect('attendance.student', 'student')
@@ -151,7 +151,7 @@ export class AttendanceService {
       .where('group.id = :groupId', { groupId })
       .orderBy('attendance.date', 'DESC')
       .getMany();
-      
+
     return attendances;
   }
 

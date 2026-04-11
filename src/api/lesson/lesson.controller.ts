@@ -130,7 +130,10 @@ export class LessonController {
             group: { id: 1, name: '1-A Guruh' },
             groupStudents: [
               { id: 1, student: { id: 1, firstName: 'John', lastName: 'Doe' } },
-              { id: 2, student: { id: 2, firstName: 'Jane', lastName: 'Smith' } },
+              {
+                id: 2,
+                student: { id: 2, firstName: 'Jane', lastName: 'Smith' },
+              },
             ],
             teacher: { id: 2, firstName: 'Ali', lastName: 'Valiyev' },
           },
