@@ -96,6 +96,7 @@ export class AttendanceService {
         lesson, // ✅ lesson to'g'ri saqlanadi
         date: attendanceDate,
         status,
+        isAttended: true,
         ...(teacher && { teacher }),
       });
 
@@ -142,7 +143,7 @@ export class AttendanceService {
   }
 
   async findAll(groupId: number) {
-    return this.attendanceRepo
+    const attendances = await  this.attendanceRepo
       .createQueryBuilder('attendance')
       .leftJoinAndSelect('attendance.group', 'group')
       .leftJoinAndSelect('attendance.student', 'student')
@@ -150,6 +151,8 @@ export class AttendanceService {
       .where('group.id = :groupId', { groupId })
       .orderBy('attendance.date', 'DESC')
       .getMany();
+      
+    return attendances;
   }
 
   async findOne(id: number, groupId: number) {
