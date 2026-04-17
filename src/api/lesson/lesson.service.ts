@@ -67,7 +67,7 @@ export class LessonService {
       where: {
         lessonDate: Between(startDate, endDate),
       },
-      relations: ['group', 'teacher', 'attendances', 'attendances.student',],
+      relations: ['group', 'teacher', 'attendances', 'attendances.student'],
       order: { lessonDate: 'ASC' },
     });
   }

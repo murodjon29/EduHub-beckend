@@ -72,7 +72,7 @@ export class GroupService {
       .leftJoinAndSelect('group.groupStudents', 'groupStudents')
       .leftJoinAndSelect('groupStudents.student', 'student')
       .leftJoinAndSelect('group.lessons', 'lessons')
-      .leftJoinAndSelect('lessons.attendances', 'attendances') // ✅ to'g'ri
+      .leftJoinAndSelect('lessons.attendances', 'attendances')
       .where('teacher.id = :teacherId', { teacherId })
       .getMany();
 
@@ -89,7 +89,7 @@ export class GroupService {
       .leftJoinAndSelect('group.teacher', 'teacher')
       .leftJoinAndSelect('group.learningCenter', 'learningCenter')
       .leftJoinAndSelect('group.lessons', 'lessons')
-      .leftJoinAndSelect('lessons.attendances', 'attendances') // ✅ to'g'ri
+      .leftJoinAndSelect('lessons.attendances', 'attendances')
       .leftJoinAndSelect(
         'group.groupStudents',
         'groupStudents',

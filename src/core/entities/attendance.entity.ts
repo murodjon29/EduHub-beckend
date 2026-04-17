@@ -47,6 +47,6 @@ export class Attendance extends BaseModel {
   })
   status: AttendanceStatus;
 
-  @Column({ type: 'boolean', nullable: true, })
+  @Column({ type: 'boolean', nullable: true })
   isAttended: boolean;
 }

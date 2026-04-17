@@ -315,7 +315,7 @@ export class GroupController {
 
   // DELETE
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @Roles(Role.LEARNING_CENTER)
   @Delete(':id')
   @ApiOperation({ summary: "Guruhni o'chirish" })
   @ApiOkResponse({
