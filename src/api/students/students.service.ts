@@ -24,7 +24,7 @@ export class StudentsService {
     @InjectRepository(GroupStudent)
     private groupStudentRepository: Repository<GroupStudent>,
     private dataSource: DataSource, // Transaction uchun
-  ) {}
+  ) { }
 
   async create(createStudentDto: CreateStudentDto) {
     const {
@@ -175,21 +175,12 @@ export class StudentsService {
     };
   }
 
-  async addStudentToGroup(studentId: number, groupId: number) {
+  async addStudentsToGroup(studentIds: number[], groupId: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // O'quvchini tekshirish
-      const student = await queryRunner.manager.findOne(Student, {
-        where: { id: studentId },
-      });
-
-      if (!student) {
-        throw new NotFoundException("O'quvchi topilmadi");
-      }
-
       // Guruhni tekshirish
       const group = await queryRunner.manager.findOne(Group, {
         where: { id: groupId },
@@ -200,54 +191,72 @@ export class StudentsService {
         throw new NotFoundException('Guruh topilmadi');
       }
 
-      // O'quvchi allaqachon guruhga qo'shilganligini tekshirish
-      const existingGroupStudent = await queryRunner.manager.findOne(
-        GroupStudent,
-        {
-          where: {
-            student: { id: studentId },
-            group: { id: groupId },
-          },
-        },
-      );
+      // Takroriy ID larni olib tashlash
+      const uniqueStudentIds = [...new Set(studentIds)];
 
-      if (existingGroupStudent) {
-        throw new ConflictException(
-          "O'quvchi allaqachon bu guruhga qo'shilgan",
-        );
-      }
-
-      // Guruhdagi o'quvchilar sonini tekshirish
-      if (
-        group.groupStudents &&
-        group.groupStudents.length >= group.maxStudents
-      ) {
+      // Guruhdagi bo'sh joy tekshirish
+      const availableSlots = group.maxStudents - (group.groupStudents?.length ?? 0);
+      if (uniqueStudentIds.length > availableSlots) {
         throw new BadRequestException(
-          "Guruh to'lgan, yangi o'quvchi qo'shib bo'lmaydi",
+          `Guruhda faqat ${availableSlots} ta bo'sh joy mavjud, ${uniqueStudentIds.length} ta o'quvchi qo'shib bo'lmaydi`,
         );
       }
 
-      // GroupStudent yaratish
-      const groupStudent = queryRunner.manager.create(GroupStudent, {
-        group: group,
-        student: student,
-        joinedAt: new Date().toISOString().split('T')[0],
-        status: GroupStudentStatus.ACTIVE,
+      // Barcha studentlarni bir so'rovda olish
+      const students = await queryRunner.manager.find(Student, {
+        where: uniqueStudentIds.map((id) => ({ id })),
       });
 
-      await queryRunner.manager.save(groupStudent);
+      // Topilmagan studentlarni aniqlash
+      if (students.length !== uniqueStudentIds.length) {
+        const foundIds = students.map((s) => s.id);
+        const notFoundIds = uniqueStudentIds.filter((id) => !foundIds.includes(id));
+        throw new NotFoundException(
+          `Quyidagi ID li o'quvchilar topilmadi: ${notFoundIds.join(', ')}`,
+        );
+      }
 
-      // Guruhdagi currentStudents sonini yangilash
+      // Allaqachon guruhda bo'lgan studentlarni tekshirish
+      const existingGroupStudents = await queryRunner.manager.find(GroupStudent, {
+        where: uniqueStudentIds.map((id) => ({
+          student: { id },
+          group: { id: groupId },
+        })),
+        relations: ['student'],
+      });
+
+      if (existingGroupStudents.length > 0) {
+        const alreadyInGroupIds = existingGroupStudents.map((gs) => gs.student.id);
+        throw new ConflictException(
+          `Quyidagi o'quvchilar allaqachon guruhda: ${alreadyInGroupIds.join(', ')}`,
+        );
+      }
+
+      // GroupStudent obyektlarini yaratish
+      const today = new Date().toISOString().split('T')[0];
+      const groupStudents = students.map((student) =>
+        queryRunner.manager.create(GroupStudent, {
+          group,
+          student,
+          joinedAt: today,
+          status: GroupStudentStatus.ACTIVE,
+        }),
+      );
+
+      // Barchasini saqlash
+      const savedGroupStudents = await queryRunner.manager.save(groupStudents);
+
+      // currentStudents sonini yangilash
       await queryRunner.manager.update(Group, group.id, {
-        currentStudents: group.groupStudents.length + 1,
+        currentStudents: (group.groupStudents?.length ?? 0) + savedGroupStudents.length,
       });
 
       await queryRunner.commitTransaction();
 
       return {
         statusCode: 201,
-        message: "O'quvchi guruhga muvaffaqiyatli qo'shildi",
-        data: groupStudent,
+        message: `${savedGroupStudents.length} ta o'quvchi guruhga muvaffaqiyatli qo'shildi`,
+        data: savedGroupStudents,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -257,31 +266,13 @@ export class StudentsService {
     }
   }
 
-  async removeStudentFromGroup(studentId: number, groupId: number) {
+  async removeStudentsFromGroup(studentIds: number[], groupId: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // GroupStudent ni topish
-      const groupStudent = await queryRunner.manager.findOne(GroupStudent, {
-        where: {
-          student: { id: studentId },
-          group: { id: groupId },
-        },
-        relations: ['group'],
-      });
-
-      if (!groupStudent) {
-        throw new NotFoundException("O'quvchi bu guruhga qo'shilmagan");
-      }
-
-      // Statusni o'zgartirish
-      groupStudent.status = GroupStudentStatus.ACTIVE;
-      groupStudent.leftAt = new Date().toISOString().split('T')[0];
-      await queryRunner.manager.save(groupStudent);
-
-      // Guruhdagi currentStudents sonini yangilash
+      // Guruhni tekshirish
       const group = await queryRunner.manager.findOne(Group, {
         where: { id: groupId },
         relations: ['groupStudents'],
@@ -291,19 +282,65 @@ export class StudentsService {
         throw new NotFoundException('Guruh topilmadi');
       }
 
-      const activeStudents = group.groupStudents.filter(
-        (gs) => gs.status === GroupStudentStatus.ACTIVE,
+      // Takroriy ID larni olib tashlash
+      const uniqueStudentIds = [...new Set(studentIds)];
+
+      // Guruhdan chiqariladigan GroupStudent larni topish
+      const groupStudents = await queryRunner.manager.find(GroupStudent, {
+        where: uniqueStudentIds.map((id) => ({
+          student: { id },
+          group: { id: groupId },
+        })),
+        relations: ['student'],
+      });
+
+      // Guruhda bo'lmagan studentlarni aniqlash
+      if (groupStudents.length !== uniqueStudentIds.length) {
+        const foundIds = groupStudents.map((gs) => gs.student.id);
+        const notFoundIds = uniqueStudentIds.filter((id) => !foundIds.includes(id));
+        throw new NotFoundException(
+          `Quyidagi o'quvchilar bu guruhga qo'shilmagan: ${notFoundIds.join(', ')}`,
+        );
+      }
+
+      // Allaqachon INACTIVE bo'lganlarni tekshirish
+      const alreadyInactive = groupStudents.filter(
+        (gs) => gs.status === GroupStudentStatus.LEFT,
+      );
+
+      if (alreadyInactive.length > 0) {
+        const inactiveIds = alreadyInactive.map((gs) => gs.student.id);
+        throw new ConflictException(
+          `Quyidagi o'quvchilar allaqachon guruhdan chiqarilgan: ${inactiveIds.join(', ')}`,
+        );
+      }
+
+      // Statusni INACTIVE ga o'zgartirish
+      const today = new Date().toISOString().split('T')[0];
+      const updatedGroupStudents = groupStudents.map((gs) => ({
+        ...gs,
+        status: GroupStudentStatus.LEFT,
+        leftAt: today,
+      }));
+
+      await queryRunner.manager.save(GroupStudent, updatedGroupStudents);
+
+      // currentStudents sonini yangilash (faqat ACTIVE larni sanash)
+      const activeStudentsCount = group.groupStudents.filter(
+        (gs) =>
+          gs.status === GroupStudentStatus.ACTIVE &&
+          !uniqueStudentIds.includes(gs.student?.id),
       ).length;
 
       await queryRunner.manager.update(Group, group.id, {
-        currentStudents: activeStudents,
+        currentStudents: activeStudentsCount,
       });
 
       await queryRunner.commitTransaction();
 
       return {
         statusCode: 200,
-        message: "O'quvchi guruhdan muvaffaqiyatli chiqarildi",
+        message: `${updatedGroupStudents.length} ta o'quvchi guruhdan muvaffaqiyatli chiqarildi`,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();

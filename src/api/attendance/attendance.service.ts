@@ -12,6 +12,7 @@ import { Student } from '../../core/entities/student.entity';
 import { Teacher } from '../../core/entities/teacher.entity';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { Lesson } from '../../core/entities/lesson.entity';
+import { retry } from 'rxjs';
 
 @Injectable()
 export class AttendanceService {
@@ -114,7 +115,7 @@ export class AttendanceService {
     return results;
   }
   async learningCenterFindAll(learningCenterId: number) {
-    return this.attendanceRepo
+    const attendances = await this.attendanceRepo
       .createQueryBuilder('attendance')
       .leftJoinAndSelect('attendance.group', 'group')
       .leftJoinAndSelect('attendance.student', 'student')
@@ -123,6 +124,12 @@ export class AttendanceService {
       .where('learningCenter.id = :learningCenterId', { learningCenterId })
       .orderBy('attendance.date', 'DESC')
       .getMany();
+
+      return {
+        statusCode: 200,
+        message: 'Attendances retrieved successfully',
+        data: attendances,
+      };
   }
 
   async learningCenterFindOne(id: number, learningCenterId: number) {

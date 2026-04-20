@@ -11,7 +11,7 @@ import { config } from '../../config';
 @Injectable()
 export class FileService {
   private readonly base_url = config.BASE_API;
-  async createFile(file: Express.Multer.File | any): Promise<string> {
+  async createFile(file: Express.Multer.File| any): Promise<string> {
     try {
       const ext = extname(file.originalname).toLowerCase();
 

@@ -1,7 +1,7 @@
-import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsInt, IsNumber } from 'class-validator';
+import { Type } from "class-transformer";
+import { ArrayMinSize, IsArray, IsInt } from "class-validator";
 
-export class AddStudentsToGroupDto {
+export class RemoveStudentsFromGroupDto {
   @IsArray()
   @ArrayMinSize(1)
   @IsInt({ each: true })

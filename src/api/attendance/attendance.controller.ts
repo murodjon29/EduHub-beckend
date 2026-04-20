@@ -544,7 +544,7 @@ export class AttendanceController {
     description: "Ushbu amalni bajarish uchun ruxsat yo'q",
     schema: { example: { statusCode: 403, message: 'Forbidden resource' } },
   })
-  learningCenterFindAll(@Request() req): Promise<Attendance[]> {
+  learningCenterFindAll(@Request() req) {
     const learningCenterId: number = req.user.learningCenterId;
     return this.attendanceService.learningCenterFindAll(learningCenterId);
   }

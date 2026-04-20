@@ -8,25 +8,23 @@ import {
   Param,
   Delete,
   UseGuards,
-  Query,
-  HttpStatus,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { AddStudentToGroupDto } from './dto/add-student-to-group.dto';
+import { AddStudentsToGroupDto } from './dto/add-student-to-group.dto';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
 import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
 import { AdminRoles, Role } from '../../common/enum';
+import { RemoveStudentsFromGroupDto } from './dto/remove-to-group';
 
 @ApiTags('students')
 @Controller('students')
@@ -115,64 +113,78 @@ export class StudentsController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Post('add-to-group')
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({
-    summary: "O'quvchini guruhga qo'shish",
-    description: "Mavjud o'quvchini yangi guruhga qo'shish",
-  })
-  @ApiBody({ type: AddStudentToGroupDto })
-  @ApiResponse({
-    status: 201,
-    description: "O'quvchi guruhga qo'shildi",
-    schema: {
-      example: {
-        statusCode: 201,
-        message: "O'quvchi guruhga muvaffaqiyatli qo'shildi",
-        data: {
+@Post('add-to-group')
+@Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+@ApiOperation({
+  summary: "O'quvchilarni guruhga qo'shish",
+  description: "Bir yoki bir nechta o'quvchini guruhga qo'shish",
+})
+@ApiBody({ type: AddStudentsToGroupDto })
+@ApiResponse({
+  status: 201,
+  description: "O'quvchilar guruhga qo'shildi",
+  schema: {
+    example: {
+      statusCode: 201,
+      message: "3 ta o'quvchi guruhga muvaffaqiyatli qo'shildi",
+      data: [
+        {
           id: 5,
-          group: {
-            id: 2,
-            name: 'Matematika Advanced 2024',
-          },
-          student: {
-            id: 1,
-            fullName: 'Aliyev Alisher',
-          },
+          group: { id: 2, name: 'Matematika Advanced 2024' },
+          student: { id: 1, fullName: 'Aliyev Alisher' },
           joinedAt: '2024-01-20',
           status: 'active',
         },
-      },
+        {
+          id: 6,
+          group: { id: 2, name: 'Matematika Advanced 2024' },
+          student: { id: 2, fullName: 'Karimov Bobur' },
+          joinedAt: '2024-01-20',
+          status: 'active',
+        },
+      ],
     },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "O'quvchi yoki guruh topilmadi",
-    schema: {
-      example: {
-        statusCode: 404,
-        message: "O'quvchi topilmadi",
-        error: 'Not Found',
-      },
+  },
+})
+@ApiResponse({
+  status: 400,
+  description: "Guruh to'lgan",
+  schema: {
+    example: {
+      statusCode: 400,
+      message: "Guruhda faqat 2 ta bo'sh joy mavjud, 3 ta o'quvchi qo'shib bo'lmaydi",
+      error: 'Bad Request',
     },
-  })
-  @ApiResponse({
-    status: 409,
-    description: "O'quvchi allaqachon guruhga qo'shilgan",
-    schema: {
-      example: {
-        statusCode: 409,
-        message: "O'quvchi allaqachon bu guruhga qo'shilgan",
-        error: 'Conflict',
-      },
+  },
+})
+@ApiResponse({
+  status: 404,
+  description: "O'quvchi yoki guruh topilmadi",
+  schema: {
+    example: {
+      statusCode: 404,
+      message: "Quyidagi ID li o'quvchilar topilmadi: 3, 7",
+      error: 'Not Found',
     },
-  })
-  addToGroup(@Body() addToGroupDto: AddStudentToGroupDto) {
-    return this.studentsService.addStudentToGroup(
-      addToGroupDto.studentId,
-      addToGroupDto.groupId,
-    );
-  }
+  },
+})
+@ApiResponse({
+  status: 409,
+  description: "O'quvchilar allaqachon guruhga qo'shilgan",
+  schema: {
+    example: {
+      statusCode: 409,
+      message: "Quyidagi o'quvchilar allaqachon guruhda: 1, 2",
+      error: 'Conflict',
+    },
+  },
+})
+addToGroup(@Body() addToGroupDto: AddStudentsToGroupDto) {
+  return this.studentsService.addStudentsToGroup(
+    addToGroupDto.studentIds,
+    addToGroupDto.groupId,
+  );
+}
 
   @Get()
   @UseGuards(JwtGuard, RolesGuard)
@@ -277,40 +289,51 @@ export class StudentsController {
   }
 
   @UseGuards(JwtGuard, RolesGuard)
-  @Delete('remove-from-group')
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
-  @ApiOperation({
-    summary: "O'quvchini guruhdan chiqarish",
-    description: "O'quvchini guruhdan arxivlash (aktiv emas qilish)",
-  })
-  @ApiBody({ type: AddStudentToGroupDto })
-  @ApiResponse({
-    status: 200,
-    description: "O'quvchi guruhdan chiqarildi",
-    schema: {
-      example: {
-        statusCode: 200,
-        message: "O'quvchi guruhdan muvaffaqiyatli chiqarildi",
-      },
+@Delete('remove-from-group')
+@Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+@ApiOperation({
+  summary: "O'quvchilarni guruhdan chiqarish",
+  description: "Bir yoki bir nechta o'quvchini guruhdan arxivlash (aktiv emas qilish)",
+})
+@ApiBody({ type: RemoveStudentsFromGroupDto })
+@ApiResponse({
+  status: 200,
+  description: "O'quvchilar guruhdan chiqarildi",
+  schema: {
+    example: {
+      statusCode: 200,
+      message: "3 ta o'quvchi guruhdan muvaffaqiyatli chiqarildi",
     },
-  })
-  @ApiResponse({
-    status: 404,
-    description: "O'quvchi guruhga qo'shilmagan",
-    schema: {
-      example: {
-        statusCode: 404,
-        message: "O'quvchi bu guruhga qo'shilmagan",
-        error: 'Not Found',
-      },
+  },
+})
+@ApiResponse({
+  status: 404,
+  description: "O'quvchilar guruhga qo'shilmagan",
+  schema: {
+    example: {
+      statusCode: 404,
+      message: "Quyidagi o'quvchilar bu guruhga qo'shilmagan: 3, 7",
+      error: 'Not Found',
     },
-  })
-  removeFromGroup(@Body() removeFromGroupDto: AddStudentToGroupDto) {
-    return this.studentsService.removeStudentFromGroup(
-      removeFromGroupDto.studentId,
-      removeFromGroupDto.groupId,
-    );
-  }
+  },
+})
+@ApiResponse({
+  status: 409,
+  description: "O'quvchilar allaqachon guruhdan chiqarilgan",
+  schema: {
+    example: {
+      statusCode: 409,
+      message: "Quyidagi o'quvchilar allaqachon guruhdan chiqarilgan: 1, 2",
+      error: 'Conflict',
+    },
+  },
+})
+removeFromGroup(@Body() removeFromGroupDto: RemoveStudentsFromGroupDto) {
+  return this.studentsService.removeStudentsFromGroup(
+    removeFromGroupDto.studentIds,
+    removeFromGroupDto.groupId,
+  );
+}
 
   @UseGuards(JwtGuard, RolesGuard)
   @Patch(':id')
