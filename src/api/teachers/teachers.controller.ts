@@ -10,7 +10,6 @@ import {
   UseGuards,
   Res,
   Query,
-  HttpStatus,
 } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
@@ -31,6 +30,7 @@ import { RolesGuard } from '../../common/guard/roles.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
 import { AdminRoles, Role } from '../../common/enum';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { TeacherStatisticsQueryDto } from './dto/teacher-statistics-query.dto';
 
 @ApiTags('teachers')
 @Controller('teachers')
@@ -265,6 +265,96 @@ export class TeachersController {
     @Query('learningCenterId') learningCenterId: string,
   ) {
     return this.teachersService.filterTeacher(search, +learningCenterId);
+  }
+
+  @Get(':id/statistics')
+  @UseGuards(JwtGuard, SelfGuard)
+  @ApiBearerAuth('Authorization')
+  @ApiOperation({
+    summary: "O'qituvchi statistikasi",
+    description:
+      "O'qituvchi uchun guruhlar, o'quvchilar, darslar va attendance statistikasi",
+  })
+  @ApiQuery({
+    name: 'startDate',
+    description: 'Boshlanish sanasi',
+    required: false,
+    example: '2026-04-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    description: 'Tugash sanasi',
+    required: false,
+    example: '2026-04-30',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "O'qituvchi statistikasi muvaffaqiyatli olindi",
+    schema: {
+      example: {
+        statusCode: 200,
+        message: "O'qituvchi statistikasi muvaffaqiyatli olindi",
+        data: {
+          teacher: {
+            id: 1,
+            name: 'John',
+            lastName: 'Doe',
+            subject: 'Matematika',
+            salary: 5000000,
+            learningCenterId: 1,
+          },
+          period: {
+            startDate: '2026-04-01',
+            endDate: '2026-04-30',
+          },
+          overview: {
+            groupCount: 4,
+            activeGroupCount: 3,
+            studentCount: 52,
+            lessonCount: 18,
+            todayLessons: 2,
+            upcomingLessons: 4,
+          },
+          attendance: {
+            totalRecords: 310,
+            presentCount: 280,
+            absentCount: 30,
+            attendanceRate: 90.32,
+          },
+          recentLessons: [
+            {
+              id: 10,
+              name: 'Algebra 1-dars',
+              lessonDate: '2026-04-22',
+              startTime: '14:00:00',
+              endTime: '16:00:00',
+              group: {
+                id: 2,
+                name: '8-A',
+              },
+            },
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Noto'g'ri sana oralig'i",
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Faqat o‘zi yoki admin murojaat qilishi mumkin',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "O'qituvchi topilmadi",
+  })
+  statistics(
+    @Param('id') id: string,
+    @Query() query: TeacherStatisticsQueryDto,
+  ) {
+    return this.teachersService.statistics(+id, query);
   }
 
   @Get()
