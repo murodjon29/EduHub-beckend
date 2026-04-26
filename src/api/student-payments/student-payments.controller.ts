@@ -25,6 +25,9 @@ import { FilterStudentPaymentDto } from './dto/filter-student-payment.dto';
 import { StudentPaymentService } from './student-payments.service';
 import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { SelfGuard } from '../../common/guard/self.guard';
+import { RolesGuard } from '../../common/guard/roles.guard';
+import { Role } from '../../common/enum';
+import { Roles } from '../../common/decorator/roles.decorator';
 
 @ApiTags('Student Payments')
 @Controller('student-payments')
@@ -78,7 +81,8 @@ export class StudentPaymentController {
     return this.paymentService.create(dto);
   }
 
-  @UseGuards(JwtGuard, SelfGuard)
+  @UseGuards(JwtGuard, RolesGuard, SelfGuard)
+  @Roles(Role.LEARNING_CENTER)
   @Get('learning-center/:learningCenterId')
   @ApiOperation({ summary: 'Student tolovlarini olish (filter bilan)' })
   @ApiQuery({ name: 'student_id', required: false, example: 1 })
