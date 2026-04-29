@@ -81,7 +81,7 @@ export class StudentPaymentController {
     return this.paymentService.create(dto);
   }
 
-  @UseGuards(JwtGuard, RolesGuard, SelfGuard)
+  @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER)
   @Get('learning-center/:learningCenterId')
   @ApiOperation({ summary: 'Student tolovlarini olish (filter bilan)' })
