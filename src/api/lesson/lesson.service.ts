@@ -17,7 +17,7 @@ export class LessonService {
 
     @InjectRepository(Teacher)
     private readonly teacherRepo: Repository<Teacher>,
-  ) {}
+  ) { }
 
   async create(dto: CreateLessonDto): Promise<Lesson> {
     const group = await this.groupRepo.findOne({
@@ -49,37 +49,76 @@ export class LessonService {
     return await this.lessonRepo.save(lesson);
   }
 
-  async findAll(): Promise<Lesson[]> {
-    return this.lessonRepo.find({
+  async findAll(learningCenterId: number): Promise<any> {
+    const lessons = await this.lessonRepo.find({
+      where: {
+        group: {
+          learningCenter: { id: learningCenterId },
+        },
+      },
       relations: [
         'group',
+        'group.learningCenter',
         'teacher',
         'attendances',
         'attendances.student',
+        'group.groupStudents',
         'group.groupStudents.student',
       ],
       order: { lessonDate: 'ASC' },
     });
+
+    return {
+      statusCode: 200,
+      message: 'Lessons fetched successfully',
+      data: lessons,
+    };
   }
 
-  async findByDateRange(startDate: string, endDate: string): Promise<Lesson[]> {
-    return this.lessonRepo.find({
+  async findByDateRange(
+    learningCenterId: number,
+    startDate: string,
+    endDate: string,
+  ): Promise<any> {
+    const lessons = await this.lessonRepo.find({
       where: {
         lessonDate: Between(startDate, endDate),
+        group: {
+          learningCenter: { id: learningCenterId },
+        },
       },
-      relations: ['group', 'teacher', 'attendances', 'attendances.student'],
-      order: { lessonDate: 'ASC' },
-    });
-  }
-
-  async findOne(id: number) {
-    const lesson = await this.lessonRepo.findOne({
-      where: { id },
       relations: [
         'group',
+        'group.learningCenter',
         'teacher',
         'attendances',
         'attendances.student',
+      ],
+      order: { lessonDate: 'ASC' },
+    });
+
+    return {
+      statusCode: 200,
+      message: 'Lessons fetched successfully',
+      data: lessons,
+    };
+  }
+
+  async findOne(id: number, learningCenterId: number): Promise<any> {
+    const lesson = await this.lessonRepo.findOne({
+      where: {
+        id,
+        group: {
+          learningCenter: { id: learningCenterId },
+        },
+      },
+      relations: [
+        'group',
+        'group.learningCenter',
+        'teacher',
+        'attendances',
+        'attendances.student',
+        'group.groupStudents',
         'group.groupStudents.student',
       ],
     });
@@ -95,46 +134,59 @@ export class LessonService {
     };
   }
 
-  async update(id: number, dto: CreateLessonDto) {
-    const lesson = await this.findOne(id);
+  async update(id: number, dto: CreateLessonDto, learningCenterId: number): Promise<any> {
+    // avval lesson mavjudligini tekshirish (learningCenter scope bilan)
+    const lesson = await this.lessonRepo.findOne({
+      where: {
+        id,
+        group: { learningCenter: { id: learningCenterId } },
+      },
+      relations: ['group', 'group.learningCenter'],
+    });
 
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
     }
-    const group = await this.groupRepo.findOne({
-      where: { id: dto.groupId },
-    });
 
-    if (!group) {
-      throw new NotFoundException('Group not found');
-    }
+    // group mavjudligini tekshirish (learningCenter scope bilan)
+    const group = await this.groupRepo.findOne({
+      where: { id: dto.groupId, learningCenter: { id: learningCenterId } },
+    });
+    if (!group) throw new NotFoundException('Group not found');
 
     const teacher = await this.teacherRepo.findOne({
-      where: { id: dto.teacherId },
+      where: { id: dto.teacherId, learningCenter: { id: learningCenterId } },
     });
+    if (!teacher) throw new NotFoundException('Teacher not found');
 
-    if (!teacher) {
-      throw new NotFoundException('Teacher not found');
-    }
-    const updatedLesson = await this.lessonRepo.update(
-      { id },
-      { ...dto, group, teacher },
-    );
+    Object.assign(lesson, { ...dto, group, teacher });
+    const updated = await this.lessonRepo.save(lesson);
+
     return {
-      status_Code: 200,
+      statusCode: 200,
       message: 'Lesson updated successfully',
-      data: updatedLesson,
+      data: updated,
     };
   }
 
-  async remove(id: number) {
-    const lesson = await this.findOne(id);
+  async remove(id: number, learningCenterId: number): Promise<any> {
+    const lesson = await this.lessonRepo.findOne({
+      where: {
+        id,
+        group: { learningCenter: { id: learningCenterId } },
+      },
+      relations: ['group', 'group.learningCenter'],
+    });
 
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
     }
 
-    await this.lessonRepo.delete({ id });
-    return { statusCode: 200, message: 'Lesson deleted successfully' };
+    await this.lessonRepo.remove(lesson);
+
+    return {
+      statusCode: 200,
+      message: 'Lesson deleted successfully',
+    };
   }
 }

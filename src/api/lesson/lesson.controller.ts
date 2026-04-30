@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
   Put,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,12 +22,10 @@ import {
 } from '@nestjs/swagger';
 import { LessonService } from './lesson.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
-import { Lesson } from '../../core/entities/lesson.entity';
 import { Role } from '../../common/enum';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { JwtGuard } from '../../common/guard/jwt-auth.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
-import { group } from 'console';
 
 @ApiTags('Lessons')
 @ApiBearerAuth('Authorization')
@@ -73,37 +72,11 @@ export class LessonController {
       },
     },
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Group or Teacher not found',
-    schema: {
-      example: {
-        statusCode: 404,
-        message: 'Group not found',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: 'Unauthorized',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden – insufficient role',
-    schema: {
-      example: {
-        statusCode: 403,
-        message: 'Forbidden resource',
-      },
-    },
-  })
-  async create(@Body() dto: CreateLessonDto): Promise<any> {
+  @ApiResponse({ status: 404, description: 'Group or Teacher not found', schema: { example: { statusCode: 404, message: 'Group not found' } } })
+  @ApiResponse({ status: 401, description: 'Unauthorized', schema: { example: { statusCode: 401, message: 'Unauthorized' } } })
+  @ApiResponse({ status: 403, description: 'Forbidden – insufficient role', schema: { example: { statusCode: 403, message: 'Forbidden resource' } } })
+  async create(@Body() dto: CreateLessonDto, @Req() req: any): Promise<any> {
+    // const learningCenterId: number = req.user.id;
     return this.lessonService.create(dto);
   }
 
@@ -111,10 +84,10 @@ export class LessonController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Get()
-  @ApiOperation({ summary: 'Get all lessons' })
+  @ApiOperation({ summary: 'Get all lessons belonging to the authenticated learning center' })
   @ApiResponse({
     status: 200,
-    description: 'List of all lessons',
+    description: 'List of all lessons for this learning center',
     schema: {
       example: {
         statusCode: 200,
@@ -127,64 +100,34 @@ export class LessonController {
             lessonDate: '2026-02-17',
             startTime: '14:00:00',
             endTime: '16:00:00',
-            group: { id: 1, name: '1-A Guruh' },
+            group: { id: 1, name: '1-A Guruh', learningCenter: { id: 5, name: 'ABC Markaz' } },
             groupStudents: [
               { id: 1, student: { id: 1, firstName: 'John', lastName: 'Doe' } },
-              {
-                id: 2,
-                student: { id: 2, firstName: 'Jane', lastName: 'Smith' },
-              },
+              { id: 2, student: { id: 2, firstName: 'Jane', lastName: 'Smith' } },
             ],
             teacher: { id: 2, firstName: 'Ali', lastName: 'Valiyev' },
-          },
-          {
-            id: 11,
-            name: 'Fizika 1-dars',
-            description: 'Kinematika asoslari',
-            lessonDate: '2026-02-18',
-            startTime: '10:00:00',
-            endTime: '12:00:00',
-            group: { id: 2, name: '1-B Guruh' },
-            teacher: { id: 3, firstName: 'Umar', lastName: 'Qodirov' },
           },
         ],
       },
     },
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: { example: { statusCode: 401, message: 'Unauthorized' } },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden – insufficient role',
-    schema: { example: { statusCode: 403, message: 'Forbidden resource' } },
-  })
-  async findAll(): Promise<any> {
-    return this.lessonService.findAll();
+  @ApiResponse({ status: 401, description: 'Unauthorized', schema: { example: { statusCode: 401, message: 'Unauthorized' } } })
+  @ApiResponse({ status: 403, description: 'Forbidden – insufficient role', schema: { example: { statusCode: 403, message: 'Forbidden resource' } } })
+  async findAll(@Req() req: any): Promise<any> {
+    const learningCenterId: number = req.user.id;
+    return this.lessonService.findAll(learningCenterId);
   }
 
   // ─── GET BY DATE RANGE ────────────────────────────────────────────────────
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Get('range')
-  @ApiOperation({ summary: 'Get lessons by date range' })
-  @ApiQuery({
-    name: 'startDate',
-    required: true,
-    example: '2026-02-01',
-    description: 'Start date (YYYY-MM-DD)',
-  })
-  @ApiQuery({
-    name: 'endDate',
-    required: true,
-    example: '2026-02-28',
-    description: 'End date (YYYY-MM-DD)',
-  })
+  @ApiOperation({ summary: 'Get lessons by date range for the authenticated learning center' })
+  @ApiQuery({ name: 'startDate', required: true, example: '2026-02-01', description: 'Start date (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'endDate', required: true, example: '2026-02-28', description: 'End date (YYYY-MM-DD)' })
   @ApiResponse({
     status: 200,
-    description: 'List of lessons within the given date range',
+    description: 'List of lessons within the given date range for this learning center',
     schema: {
       example: {
         statusCode: 200,
@@ -193,59 +136,33 @@ export class LessonController {
           {
             id: 10,
             name: 'Matematika 1-dars',
-            description: 'Algebra asoslari',
             lessonDate: '2026-02-17',
             startTime: '14:00:00',
             endTime: '16:00:00',
             group: { id: 1, name: '1-A Guruh' },
             teacher: { id: 2, firstName: 'Ali', lastName: 'Valiyev' },
           },
-          {
-            id: 11,
-            name: 'Fizika 1-dars',
-            description: 'Kinematika asoslari',
-            lessonDate: '2026-02-18',
-            startTime: '10:00:00',
-            endTime: '12:00:00',
-            group: { id: 2, name: '1-B Guruh' },
-            teacher: { id: 3, firstName: 'Umar', lastName: 'Qodirov' },
-          },
         ],
       },
     },
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid date format',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'Invalid date format. Use YYYY-MM-DD',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: { example: { statusCode: 401, message: 'Unauthorized' } },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden – insufficient role',
-    schema: { example: { statusCode: 403, message: 'Forbidden resource' } },
-  })
+  @ApiResponse({ status: 400, description: 'Invalid date format', schema: { example: { statusCode: 400, message: 'Invalid date format. Use YYYY-MM-DD' } } })
+  @ApiResponse({ status: 401, description: 'Unauthorized', schema: { example: { statusCode: 401, message: 'Unauthorized' } } })
+  @ApiResponse({ status: 403, description: 'Forbidden – insufficient role', schema: { example: { statusCode: 403, message: 'Forbidden resource' } } })
   async findByDateRange(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
+    @Req() req: any,
   ): Promise<any> {
-    return this.lessonService.findByDateRange(startDate, endDate);
+    const learningCenterId: number = req.user.id;
+    return this.lessonService.findByDateRange(learningCenterId, startDate, endDate);
   }
 
   // ─── GET ONE ──────────────────────────────────────────────────────────────
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Get(':id')
-  @ApiOperation({ summary: 'Get lesson by ID' })
+  @ApiOperation({ summary: 'Get lesson by ID (only if it belongs to the authenticated learning center)' })
   @ApiParam({ name: 'id', example: 10, description: 'Lesson ID' })
   @ApiResponse({
     status: 200,
@@ -261,38 +178,28 @@ export class LessonController {
           lessonDate: '2026-02-17',
           startTime: '14:00:00',
           endTime: '16:00:00',
-          group: { id: 1, name: '1-A Guruh' },
+          group: { id: 1, name: '1-A Guruh', learningCenter: { id: 5, name: 'ABC Markaz' } },
           teacher: { id: 2, firstName: 'Ali', lastName: 'Valiyev' },
         },
       },
     },
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Lesson not found',
-    schema: {
-      example: { statusCode: 404, message: 'Lesson not found' },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: { example: { statusCode: 401, message: 'Unauthorized' } },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden – insufficient role',
-    schema: { example: { statusCode: 403, message: 'Forbidden resource' } },
-  })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
-    return this.lessonService.findOne(id);
+  @ApiResponse({ status: 404, description: 'Lesson not found', schema: { example: { statusCode: 404, message: 'Lesson not found' } } })
+  @ApiResponse({ status: 401, description: 'Unauthorized', schema: { example: { statusCode: 401, message: 'Unauthorized' } } })
+  @ApiResponse({ status: 403, description: 'Forbidden – insufficient role', schema: { example: { statusCode: 403, message: 'Forbidden resource' } } })
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: any,
+  ): Promise<any> {
+    const learningCenterId: number = req.user.id;
+    return this.lessonService.findOne(id, learningCenterId);
   }
 
   // ─── UPDATE ───────────────────────────────────────────────────────────────
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Put(':id')
-  @ApiOperation({ summary: 'Update lesson by ID' })
+  @ApiOperation({ summary: 'Update lesson by ID (only if it belongs to the authenticated learning center)' })
   @ApiParam({ name: 'id', example: 10, description: 'Lesson ID' })
   @ApiBody({
     description: 'Lesson update payload',
@@ -328,66 +235,33 @@ export class LessonController {
       },
     },
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Lesson, Group or Teacher not found',
-    schema: {
-      example: { statusCode: 404, message: 'Lesson not found' },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: { example: { statusCode: 401, message: 'Unauthorized' } },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden – insufficient role',
-    schema: { example: { statusCode: 403, message: 'Forbidden resource' } },
-  })
+  @ApiResponse({ status: 404, description: 'Lesson, Group or Teacher not found', schema: { example: { statusCode: 404, message: 'Lesson not found' } } })
+  @ApiResponse({ status: 401, description: 'Unauthorized', schema: { example: { statusCode: 401, message: 'Unauthorized' } } })
+  @ApiResponse({ status: 403, description: 'Forbidden – insufficient role', schema: { example: { statusCode: 403, message: 'Forbidden resource' } } })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateLessonDto,
+    @Req() req: any,
   ): Promise<any> {
-    return this.lessonService.update(id, dto);
+    const learningCenterId: number = req.user.id;
+    return this.lessonService.update(id, dto, learningCenterId);
   }
 
   // ─── DELETE ───────────────────────────────────────────────────────────────
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.LEARNING_CENTER)
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete lesson by ID' })
+  @ApiOperation({ summary: 'Delete lesson by ID (only if it belongs to the authenticated learning center)' })
   @ApiParam({ name: 'id', example: 10, description: 'Lesson ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lesson deleted successfully',
-    schema: {
-      example: {
-        statusCode: 200,
-        message: 'Lesson deleted successfully',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Lesson not found',
-    schema: {
-      example: { statusCode: 404, message: 'Lesson not found' },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: { example: { statusCode: 401, message: 'Unauthorized' } },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden – insufficient role',
-    schema: { example: { statusCode: 403, message: 'Forbidden resource' } },
-  })
+  @ApiResponse({ status: 200, description: 'Lesson deleted successfully', schema: { example: { statusCode: 200, message: 'Lesson deleted successfully' } } })
+  @ApiResponse({ status: 404, description: 'Lesson not found', schema: { example: { statusCode: 404, message: 'Lesson not found' } } })
+  @ApiResponse({ status: 401, description: 'Unauthorized', schema: { example: { statusCode: 401, message: 'Unauthorized' } } })
+  @ApiResponse({ status: 403, description: 'Forbidden – insufficient role', schema: { example: { statusCode: 403, message: 'Forbidden resource' } } })
   async remove(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<{ message: string }> {
-    return this.lessonService.remove(id);
+    @Req() req: any,
+  ): Promise<any> {
+    const learningCenterId: number = req.user.id;
+    return this.lessonService.remove(id, learningCenterId);
   }
 }
