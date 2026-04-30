@@ -10,6 +10,7 @@ import {
   Query,
   Put,
   Req,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -198,7 +199,7 @@ export class LessonController {
   // ─── UPDATE ───────────────────────────────────────────────────────────────
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.LEARNING_CENTER)
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update lesson by ID (only if it belongs to the authenticated learning center)' })
   @ApiParam({ name: 'id', example: 10, description: 'Lesson ID' })
   @ApiBody({
