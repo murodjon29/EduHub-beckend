@@ -118,7 +118,7 @@ export class StudentPaymentController {
     return this.paymentService.findAll(learningCenterId, filterDto);
   }
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
+  @Roles(Role.LEARNING_CENTER)
   @Get(':id')
   @ApiOperation({ summary: 'Bitta tolovni olish' })
   @ApiParam({ name: 'id', example: 1 })
