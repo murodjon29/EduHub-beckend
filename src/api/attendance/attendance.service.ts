@@ -31,7 +31,7 @@ export class AttendanceService {
 
     @InjectRepository(Lesson)
     private readonly lessonRepo: Repository<Lesson>,
-  ) {}
+  ) { }
 
   async create(dto: CreateAttendanceDto) {
     const { groupId, students, teacherId, date, lessonId } = dto;
@@ -119,17 +119,18 @@ export class AttendanceService {
       .createQueryBuilder('attendance')
       .leftJoinAndSelect('attendance.group', 'group')
       .leftJoinAndSelect('attendance.student', 'student')
-      .leftJoinAndSelect('student.learningCenter', 'learningCenter')
       .leftJoinAndSelect('attendance.teacher', 'teacher')
+      .leftJoin('student.learningCenter', 'learningCenter')
       .where('learningCenter.id = :learningCenterId', { learningCenterId })
+      .andWhere('attendance.student IS NOT NULL') // bo'sh object'larni filtr qiladi
       .orderBy('attendance.date', 'DESC')
       .getMany();
 
-      return {
-        statusCode: 200,
-        message: 'Attendances retrieved successfully',
-        data: attendances,
-      };
+    return {
+      statusCode: 200,
+      message: 'Attendances retrieved successfully',
+      data: attendances,
+    };
   }
 
   async learningCenterFindOne(id: number, learningCenterId: number) {

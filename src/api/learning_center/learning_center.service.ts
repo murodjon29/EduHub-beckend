@@ -29,7 +29,7 @@ export class LearningCenterService {
 
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
-  ) {}
+  ) { }
 
   async findLearningCenterStudents(learningCenterId: number) {
     const students = await this.studentRepository
@@ -63,6 +63,26 @@ export class LearningCenterService {
       statusCode: 200,
       message: "O'qituvchilar topildi",
       data: teachers,
+    };
+  }
+
+  async getOneTeacher(learningCenterId: number, teacherId: number) {
+    const teacher = await this.teacherRepository
+      .createQueryBuilder('teacher')
+      .where('teacher.learningCenter.id = :learningCenterId', {
+        learningCenterId,
+      })
+      .andWhere('teacher.id = :teacherId', { teacherId })
+      .getOne();
+
+    if (!teacher) {
+      throw new NotFoundException("O'qituvchi topilmadi");
+    }
+
+    return {
+      statusCode: 200,
+      message: "O'qituvchi topildi",
+      data: teacher,
     };
   }
 

@@ -32,7 +32,7 @@ import { Roles } from '../../common/decorator/roles.decorator';
 @ApiBearerAuth('Authorization')
 @Controller('learning-centers')
 export class LearningCenterController {
-  constructor(private readonly learningCenterService: LearningCenterService) {}
+  constructor(private readonly learningCenterService: LearningCenterService) { }
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN, AdminRoles.SUPERADMIN)
@@ -244,6 +244,37 @@ export class LearningCenterController {
     return this.learningCenterService.getTeachersByLearningCenter(
       learningCenterId,
     );
+  }
+
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(Role.LEARNING_CENTER)
+  @Get(':learningCenterId/teachers/:teacherId')
+  @ApiOperation({
+    summary: "O'quv markaziga tegishli bitta o'qituvchini olish",
+  })
+  @ApiParam({ name: 'learningCenterId', example: 1 })
+  @ApiParam({ name: 'teacherId', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: "O'qituvchi topildi",
+    schema: {
+      example: {
+        statusCode: 200,
+        message: "O'qituvchi topildi",
+        data: {
+          id: 1,
+          firstName: 'Ali',
+          lastName: 'Valiyev',
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({ description: "O'qituvchi topilmadi" })
+  async findOneTeacher(
+    @Param('learningCenterId', ParseIntPipe) learningCenterId: number,
+    @Param('teacherId', ParseIntPipe) teacherId: number,
+  ) {
+    return this.learningCenterService.getOneTeacher(learningCenterId, teacherId);
   }
 
   // =================================
