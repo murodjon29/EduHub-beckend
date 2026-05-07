@@ -282,7 +282,7 @@ export class GroupController {
 
   // UPDATE
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles(Role.LEARNING_CENTER, AdminRoles.ADMIN)
+  @Roles(Role.LEARNING_CENTER)
   @Patch(':id')
   @ApiOperation({ summary: 'Guruhni yangilash' })
   @ApiBody({
