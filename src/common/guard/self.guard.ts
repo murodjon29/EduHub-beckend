@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { AdminRoles } from '../enum';
+import { AdminRoles, Role } from '../enum';
 
 @Injectable()
 export class SelfGuard implements CanActivate {
@@ -12,7 +12,8 @@ export class SelfGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     if (
       req.user?.role === AdminRoles.SUPERADMIN ||
-      req.user?.role === AdminRoles.ADMIN
+      req.user?.role === AdminRoles.ADMIN ||
+      req.user?.role === Role.LEARNING_CENTER
     ) {
       return true;
     }
