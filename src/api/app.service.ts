@@ -23,7 +23,7 @@ export default class Application {
     app.enableCors({
       origin: [
         'http://localhost:5173', // local frontend
-        'https://app.novdaunion.uz', // production frontend
+        'https://education-hub-nine.vercel.app' // production frontend
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
